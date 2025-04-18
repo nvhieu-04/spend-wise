@@ -1,36 +1,44 @@
-import Link from "next/link";
+"use client";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function HomePage() {
+  const { data: session } = useSession();
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
         <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
+          Welcome to Spend Wise
         </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
-        </div>
+        {
+          session ? (
+            <p className="text-2xl text-white">
+              You are signed in as {session.user?.name}
+              <br />
+              <button
+                className="rounded-md bg-white px-4 py-2 text-black hover:bg-gray-200"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </button>
+            </p>
+          ) : (
+            <p className="text-2xl text-white">
+              You are not signed in.{" "}
+              <button
+                className="rounded-md bg-white px-4 py-2 text-black hover:bg-gray-200"
+                onClick={() => signIn()}
+              >
+                Sign in
+              </button>
+              <br />
+              <span className="text-sm text-gray-400">
+                Note: You will be redirected to GitHub to sign in.
+              </span>
+              <br />
+            </p>
+          )
+        }
+       
       </div>
     </main>
   );
