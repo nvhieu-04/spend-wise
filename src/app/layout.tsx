@@ -22,13 +22,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`}>
-      
      <body>
      <Header />
         <AuthProvider>
           {children}
         </AuthProvider>
-      <Footer />
+        <Footer />
       </body>
     </html>
   );
