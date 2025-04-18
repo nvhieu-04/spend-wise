@@ -2,7 +2,9 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-import AuthProvider from "~/components/SessionProvider";
+import AuthProvider from "~/context/SessionProvider";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: "Spend Wise",
@@ -20,10 +22,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`}>
+      
      <body>
+     <Header />
         <AuthProvider>
           {children}
         </AuthProvider>
+      <Footer />
       </body>
     </html>
   );

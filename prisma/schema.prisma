@@ -56,7 +56,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// 2. Models của app bạn
 model BankCard {
   id               String   @id @default(uuid()) @db.Char(36)
   user             User     @relation(fields: [userId], references: [id])
