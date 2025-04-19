@@ -4,3 +4,27 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  overflow: hidden; /* Prevent scrolling */
+}
+
+#__next {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+main {
+  flex: 1; /* Ensures the main content stretches to fill available space */
+  overflow-y: auto; /* Allows scrolling within the main content if needed */
+}

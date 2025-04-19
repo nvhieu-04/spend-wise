@@ -1,5 +1,5 @@
 import "~/styles/globals.css";
-
+import React from "react";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import AuthProvider from "~/context/SessionProvider";
@@ -22,12 +22,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`}>
-     <body>
-     <Header />
+      <body>
         <AuthProvider>
-          {children}
+          <Header />
+          <main>
+            {children}
+          </main>
+          <Footer />
         </AuthProvider>
-        <Footer />
       </body>
     </html>
   );
