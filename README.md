@@ -1,29 +1,113 @@
-# Create T3 App
+# Spend Wise - Smart Financial Management Platform
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Spend Wise is a modern financial management application built with the T3 Stack, designed to help users track their spending, manage bank cards, and optimize cashback rewards.
 
-## What's next? How do I make an app with this?
+## Tech Stack
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Frontend**: Next.js 14 with React Server Components
+- **Authentication**: NextAuth.js with GitHub OAuth
+- **Database**: MySQL with Prisma ORM
+- **Styling**: Tailwind CSS
+- **API Layer**: tRPC for type-safe API endpoints
+- **Deployment**: Vercel (recommended)
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Features
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+### User Management
+- Secure authentication with GitHub OAuth
+- User profile management
+- Email verification support
 
-## Learn More
+### Bank Card Management
+- Add and manage multiple bank cards
+- Track card details including:
+  - Card name and last 4 digits
+  - Bank name
+  - Card type
+  - Credit limit (for credit cards)
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Transaction Tracking
+- Record and categorize transactions
+- Track spending by merchant
+- Support for multiple currencies
+- Transaction history with date filtering
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### Cashback Optimization
+- Define cashback policies per card and category
+- Set custom cashback percentages
+- Configure maximum cashback limits
+- Automatic cashback calculation for transactions
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+### Category Management
+- Create and manage spending categories
+- Associate transactions with categories
+- Link categories to cashback policies
 
-## How do I deploy this?
+## Database Schema
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+The application uses a MySQL database with the following main entities:
+
+### User
+- Basic user information (name, email, profile image)
+- Authentication details
+- One-to-many relationship with bank cards
+
+### BankCard
+- Card details (name, last 4 digits, bank, type)
+- Credit limit information
+- One-to-many relationships with transactions and cashback policies
+
+### Transaction
+- Transaction details (amount, currency, date)
+- Merchant information
+- Category association
+- Cashback earned
+- Links to bank card
+
+### CashbackPolicy
+- Card-specific cashback rules
+- Category-based cashback percentages
+- Maximum cashback limits
+- Links to both card and category
+
+### Category
+- Spending categories
+- Optional descriptions
+- Links to transactions and cashback policies
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+4. Configure your database connection in `.env`
+5. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## API Documentation
+
+The application provides a comprehensive set of API endpoints for:
+
+- User management (`/api/user`)
+- Bank card operations (`/api/card`)
+- Transaction tracking (`/api/transaction`)
+- Cashback policy management (`/api/cashback`)
+- Category management (`/api/category`)
+
+All endpoints are type-safe using tRPC and require authentication.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
