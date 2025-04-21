@@ -57,6 +57,8 @@ model BankCard {
   bankName         String
   cardType         String
   creditLimit      Float?
+  statementClosingDate Int?             // Day of month (1-31)
+  paymentDueDate       Int?             // Day of month (1-31)
   createdAt        DateTime         @default(now())
   user             User             @relation(fields: [userId], references: [id])
   cashbackPolicies CashbackPolicy[] @relation("BankCardToCashbackPolicy")

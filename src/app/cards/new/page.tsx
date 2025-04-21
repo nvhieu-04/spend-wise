@@ -9,6 +9,8 @@ interface CardFormData {
   cardType: string;
   cardNumber: string;
   creditLimit?: number;
+  statementClosingDate?: number;
+  paymentDueDate?: number;
 }
 
 export default function NewCardPage() {
@@ -21,6 +23,8 @@ export default function NewCardPage() {
     cardType: "VISA",
     cardNumber: "",
     creditLimit: undefined,
+    statementClosingDate: undefined,
+    paymentDueDate: undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,6 +173,40 @@ export default function NewCardPage() {
                 step="0.01"
                 className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                 placeholder="Enter credit limit amount"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="statementClosingDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Statement Closing Date (Optional)
+              </label>
+              <input
+                type="number"
+                id="statementClosingDate"
+                name="statementClosingDate"
+                value={formData.statementClosingDate || ""}
+                onChange={handleChange}
+                min="1"
+                max="31"
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                placeholder="Enter day of month (1-31)"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="paymentDueDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Payment Due Date (Optional)
+              </label>
+              <input
+                type="number"
+                id="paymentDueDate"
+                name="paymentDueDate"
+                value={formData.paymentDueDate || ""}
+                onChange={handleChange}
+                min="1"
+                max="31"
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                placeholder="Enter day of month (1-31)"
               />
             </div>
 

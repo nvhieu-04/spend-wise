@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import TransactionItem from "../../components/TransactionItem";
+import CreditLimitBar from "~/components/CreditLimitBar";
 
 interface CardDetails {
   id: string;
@@ -11,6 +12,8 @@ interface CardDetails {
   cardType: string;
   cardNumberLast4: string;
   creditLimit?: number;
+  currentSpending?: number;
+  currentRepayment?: number;
   cashbackPolicies: {
     id: string;
     category: string;
@@ -155,6 +158,13 @@ export default function CardDetailPage() {
                   <p className="mt-1 text-lg text-gray-900">
                     {card.creditLimit.toLocaleString()}VNĐ
                   </p>
+                  <div className="mt-4">
+                    <CreditLimitBar
+                      creditLimit={card.creditLimit}
+                      currentSpending={card.currentSpending || 0}
+                      currentRepayment={card.currentRepayment || 0}
+                    />
+                  </div>
                 </div>
               )}
             </div>

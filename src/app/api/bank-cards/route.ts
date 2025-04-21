@@ -42,7 +42,15 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { cardName, bankName, cardType, cardNumberLast4, creditLimit } = body;
+    const { 
+      cardName, 
+      bankName, 
+      cardType, 
+      cardNumberLast4, 
+      creditLimit,
+      statementClosingDate,
+      paymentDueDate 
+    } = body;
 
     // Validate required fields
     if (!cardName || !bankName || !cardType || !cardNumberLast4) {
@@ -60,6 +68,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate statement closing date and payment due date
+    if (statementClosingDate && (statementClosingDate < 1 || statementClosingDate > 31)) {
+      return NextResponse.json(
+        { error: "Statement closing date must be between 1 and 31" },
+        { status: 400 }
+      );
+    }
+
+    if (paymentDueDate && (paymentDueDate < 1 || paymentDueDate > 31)) {
+      return NextResponse.json(
+        { error: "Payment due date must be between 1 and 31" },
+        { status: 400 }
+      );
+    }
+
     const newCard = await prisma.bankCard.create({
       data: {
         cardName,
@@ -67,6 +90,8 @@ export async function POST(request: Request) {
         cardType,
         cardNumberLast4,
         creditLimit,
+        statementClosingDate,
+        paymentDueDate,
         userId: session.user.id,
       },
     });
