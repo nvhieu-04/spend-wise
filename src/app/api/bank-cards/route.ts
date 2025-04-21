@@ -68,15 +68,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate statement closing date and payment due date
-    if (statementClosingDate && (statementClosingDate < 1 || statementClosingDate > 31)) {
+    // Parse and validate statement closing date and payment due date
+    const parsedStatementClosingDate = statementClosingDate ? parseInt(statementClosingDate, 10) : undefined;
+    const parsedPaymentDueDate = paymentDueDate ? parseInt(paymentDueDate, 10) : undefined;
+
+    if (parsedStatementClosingDate && (parsedStatementClosingDate < 1 || parsedStatementClosingDate > 31)) {
       return NextResponse.json(
         { error: "Statement closing date must be between 1 and 31" },
         { status: 400 }
       );
     }
 
-    if (paymentDueDate && (paymentDueDate < 1 || paymentDueDate > 31)) {
+    if (parsedPaymentDueDate && (parsedPaymentDueDate < 1 || parsedPaymentDueDate > 31)) {
       return NextResponse.json(
         { error: "Payment due date must be between 1 and 31" },
         { status: 400 }
@@ -90,8 +93,8 @@ export async function POST(request: Request) {
         cardType,
         cardNumberLast4,
         creditLimit,
-        statementClosingDate,
-        paymentDueDate,
+        statementClosingDate: parsedStatementClosingDate,
+        paymentDueDate: parsedPaymentDueDate,
         userId: session.user.id,
       },
     });

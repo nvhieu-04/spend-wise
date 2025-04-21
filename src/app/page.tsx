@@ -86,16 +86,10 @@ export default function HomePage() {
             </p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row justify-center gap-4">
               <Link
-                href="/auth/signin"
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white border-blue-600 hover:bg-blue-50 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/auth/signup"
+                href="api/auth/signin"
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                Sign Up
+                Sign In
               </Link>
             </div>
           </div>

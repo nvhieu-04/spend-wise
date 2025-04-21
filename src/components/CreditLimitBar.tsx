@@ -14,6 +14,7 @@ const CreditLimitBar: React.FC<CreditLimitBarProps> = ({
   const spendingPercentage = (currentSpending / creditLimit) * 100;
   const repaymentPercentage = (currentRepayment / creditLimit) * 100;
   const availablePercentage = 100 - spendingPercentage - repaymentPercentage;
+  const availableCreditLimit = creditLimit - currentSpending + currentRepayment;
 
   return (
     <div className="w-full space-y-3">
@@ -36,23 +37,26 @@ const CreditLimitBar: React.FC<CreditLimitBarProps> = ({
           <div 
             className="bg-gray-300 transition-all duration-300" 
             style={{ width: `${availablePercentage}%` }}
-            title={`Available: ${(creditLimit - currentSpending - currentRepayment).toLocaleString()}VNĐ`}
+            title={`Available: ${availableCreditLimit.toLocaleString()}VNĐ`}
           />
         </div>
       </div>
-      <div className="flex justify-between text-xs text-gray-500">
-        <div className="flex items-center gap-1">
+      <div className="flex justify-between items-center text-sm">
+        <div className="flex items-center gap-1 text-gray-500">
           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
           <span>Spent</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 text-gray-500">
           <div className="w-3 h-3 rounded-full bg-green-500"></div>
           <span>Repaid</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 text-gray-500">
           <div className="w-3 h-3 rounded-full bg-gray-300"></div>
           <span>Available</span>
         </div>
+      </div>
+      <div className="text-center text-lg font-semibold text-gray-900">
+        Available Credit Limit: {availableCreditLimit.toLocaleString()}VNĐ
       </div>
     </div>
   );

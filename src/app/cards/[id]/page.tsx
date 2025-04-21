@@ -14,6 +14,8 @@ interface CardDetails {
   creditLimit?: number;
   currentSpending?: number;
   currentRepayment?: number;
+  statementClosingDate?: number;
+  paymentDueDate?: number;
   cashbackPolicies: {
     id: string;
     category: string;
@@ -152,7 +154,20 @@ export default function CardDetailPage() {
                 <h3 className="text-sm font-medium text-gray-500">Card Number</h3>
                 <p className="mt-1 text-lg text-gray-900">•••• •••• •••• {card.cardNumberLast4}</p>
               </div>
-              {card.creditLimit && (
+              {card.statementClosingDate && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Statement Closing Date</h3>
+                  <p className="mt-1 text-lg text-gray-900">Day {card.statementClosingDate} of each month</p>
+                </div>
+              )}
+              {card.paymentDueDate && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Payment Due Date</h3>
+                  <p className="mt-1 text-lg text-gray-900">Day {card.paymentDueDate} of each month</p>
+                </div>
+              )}
+            </div>
+            {card.creditLimit && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
                   <p className="mt-1 text-lg text-gray-900">
@@ -167,8 +182,6 @@ export default function CardDetailPage() {
                   </div>
                 </div>
               )}
-            </div>
-
             {card.cashbackPolicies && card.cashbackPolicies.length > 0 && (
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Cashback Policies</h2>
