@@ -1,9 +1,9 @@
-import { db } from "~/server/db";
+import { prisma } from "~/server/db";
 import { type Transaction } from "@prisma/client";
 
 export class TransactionService {
   static async getUserTransactions(userId: string) {
-    return await db.transaction.findMany({
+    return await prisma.transaction.findMany({
       where: {
         card: {
           userId,
@@ -20,7 +20,7 @@ export class TransactionService {
   }
 
   static async getTransactionById(id: string, userId: string) {
-    return await db.transaction.findFirst({
+    return await prisma.transaction.findFirst({
       where: {
         id,
         card: {
@@ -44,7 +44,7 @@ export class TransactionService {
     cashbackEarned?: number;
   }, userId: string) {
     // Verify card ownership
-    const card = await db.bankCard.findFirst({
+    const card = await prisma.bankCard.findFirst({
       where: {
         id: data.cardId,
         userId,
@@ -55,7 +55,7 @@ export class TransactionService {
       throw new Error("Card not found or unauthorized");
     }
 
-    return await db.transaction.create({
+    return await prisma.transaction.create({
       data,
       include: {
         card: true,
@@ -69,7 +69,7 @@ export class TransactionService {
     userId: string,
     data: Partial<Omit<Transaction, "id" | "cardId" | "createdAt">>,
   ) {
-    return await db.transaction.update({
+    return await prisma.transaction.update({
       where: {
         id,
         card: {
@@ -88,7 +88,7 @@ export class TransactionService {
   }
 
   static async deleteTransaction(id: string, userId: string) {
-    return await db.transaction.delete({
+    return await prisma.transaction.delete({
       where: {
         id,
         card: {

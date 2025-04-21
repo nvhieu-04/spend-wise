@@ -8,61 +8,100 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid()) @db.Char(36)
-  name        String
-  email       String   @unique
-  passwordHash String?
-  image        String? 
+  id            String     @id @default(uuid()) @db.Char(36)
+  name          String
+  email         String     @unique
+  createdAt     DateTime   @default(now())
+  passwordHash  String?
+  image         String?
   emailVerified String?
-  createdAt   DateTime @default(now())
-  bankCards   BankCard[]
+  accounts      Account[]
+  bankCards     BankCard[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(uuid()) @db.Char(36)
+  userId            String  @db.Char(36)
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Char(36)
+  sessionToken String   @unique
+  userId       String   @db.Char(36)
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Session_userId_fkey")
 }
 
 model BankCard {
-  id               String   @id @default(uuid()) @db.Char(36)
-  user             User     @relation(fields: [userId], references: [id])
-  userId           String   @db.Char(36)
+  id               String           @id @default(uuid()) @db.Char(36)
+  userId           String           @db.Char(36)
   cardName         String
   cardNumberLast4  String
   bankName         String
   cardType         String
   creditLimit      Float?
-  cashbackPolicies CashbackPolicy[]
-  transactions     Transaction[]
-  createdAt        DateTime @default(now())
+  createdAt        DateTime         @default(now())
+  user             User             @relation(fields: [userId], references: [id])
+  cashbackPolicies CashbackPolicy[] @relation("BankCardToCashbackPolicy")
+  transactions     Transaction[]    @relation("BankCardToTransaction")
+
+  @@index([userId], map: "BankCard_userId_fkey")
 }
 
 model Transaction {
-  id               String   @id @default(uuid()) @db.Char(36)
-  card             BankCard @relation(fields: [cardId], references: [id])
-  cardId           String   @db.Char(36)
-  amount           Float
-  currency         String
-  transactionDate  DateTime
-  merchantName     String?
-  category         Category? @relation(fields: [categoryId], references: [id])
-  categoryId       String?  @db.Char(36)
-  cashbackEarned   Float?
-  createdAt        DateTime @default(now())
+  id              String    @id @default(uuid()) @db.Char(36)
+  cardId          String    @db.Char(36)
+  amount          Float
+  currency        String
+  transactionDate DateTime
+  merchantName    String?
+  categoryId      String?   @db.Char(36)
+  cashbackEarned  Float?
+  createdAt       DateTime  @default(now())
+  isExpense       Boolean   @default(true)
+  card            BankCard  @relation("BankCardToTransaction", fields: [cardId], references: [id], onDelete: Cascade)
+  category        Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([cardId], map: "Transaction_cardId_fkey")
+  @@index([categoryId], map: "Transaction_categoryId_fkey")
 }
 
 model CashbackPolicy {
-  id                String   @id @default(uuid()) @db.Char(36)
-  card              BankCard @relation(fields: [cardId], references: [id])
-  cardId            String   @db.Char(36)
-  category          Category @relation(fields: [categoryId], references: [id])
-  categoryId        String   @db.Char(36)
+  id                 String   @id @default(uuid()) @db.Char(36)
+  cardId             String   @db.Char(36)
+  categoryId         String   @db.Char(36)
   cashbackPercentage Float
-  maxCashback       Float?
-  createdAt         DateTime @default(now())
+  maxCashback        Float?
+  createdAt          DateTime @default(now())
+  card               BankCard @relation("BankCardToCashbackPolicy", fields: [cardId], references: [id], onDelete: Cascade)
+  category           Category @relation(fields: [categoryId], references: [id])
+
+  @@index([cardId], map: "CashbackPolicy_cardId_fkey")
+  @@index([categoryId], map: "CashbackPolicy_categoryId_fkey")
 }
 
 model Category {
-  id               String   @id @default(uuid()) @db.Char(36)
-  name             String   @unique
+  id               String           @id @default(uuid()) @db.Char(36)
+  name             String           @unique
   description      String?
-  createdAt        DateTime @default(now())
-  transactions     Transaction[]
+  createdAt        DateTime         @default(now())
   cashbackPolicies CashbackPolicy[]
+  transactions     Transaction[]
 }
-

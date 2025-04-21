@@ -1,9 +1,9 @@
-import { db } from "~/server/db";
+import { prisma } from "~/server/db";
 import { type Category } from "@prisma/client";
 
 export class CategoryService {
   static async getAllCategories() {
-    return await db.category.findMany({
+    return await prisma.category.findMany({
       orderBy: {
         name: "asc",
       },
@@ -11,7 +11,7 @@ export class CategoryService {
   }
 
   static async getCategoryById(id: string) {
-    return await db.category.findUnique({
+    return await prisma.category.findUnique({
       where: {
         id,
       },
@@ -27,7 +27,7 @@ export class CategoryService {
     description?: string;
   }) {
     // Check for duplicate name
-    const existingCategory = await db.category.findUnique({
+    const existingCategory = await prisma.category.findUnique({
       where: {
         name: data.name,
       },
@@ -37,7 +37,7 @@ export class CategoryService {
       throw new Error("Category with this name already exists");
     }
 
-    return await db.category.create({
+    return await prisma.category.create({
       data,
     });
   }
@@ -48,7 +48,7 @@ export class CategoryService {
   ) {
     // If name is being updated, check for duplicates
     if (data.name) {
-      const existingCategory = await db.category.findFirst({
+      const existingCategory = await prisma.category.findFirst({
         where: {
           name: data.name,
           id: {
@@ -62,7 +62,7 @@ export class CategoryService {
       }
     }
 
-    return await db.category.update({
+    return await prisma.category.update({
       where: {
         id,
       },
@@ -76,7 +76,7 @@ export class CategoryService {
 
   static async deleteCategory(id: string) {
     // Check if category is being used
-    const category = await db.category.findUnique({
+    const category = await prisma.category.findUnique({
       where: {
         id,
       },
@@ -94,7 +94,7 @@ export class CategoryService {
       throw new Error("Cannot delete category that is being used in transactions or cashback policies");
     }
 
-    return await db.category.delete({
+    return await prisma.category.delete({
       where: {
         id,
       },

@@ -1,31 +1,28 @@
 import "~/styles/globals.css";
-import React from "react";
-import { type Metadata } from "next";
-import { Geist } from "next/font/google";
-import AuthProvider from "~/context/SessionProvider";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import AuthProvider from "~/context/SessionProvider";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Spend Wise",
-  description: "A simple expense tracker",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: "SpendWise - Manage Your Bank Cards",
+  description: "Track your credit cards, monitor spending, and maximize your rewards in one place.",
 };
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body>
+    <html lang="en">
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>
           <Header />
-          <main>
+          <main className="flex-grow">
             {children}
           </main>
           <Footer />

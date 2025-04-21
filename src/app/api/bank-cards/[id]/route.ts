@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
-import { db } from "~/server/db";
+import { prisma } from "../../../../lib/prisma";
 
 // GET a specific bank card
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const bankCard = await db.bankCard.findFirst({
+    const bankCard = await prisma.bankCard.findFirst({
       where: {
         id: params.id,
         userId: session.user.id,
@@ -50,7 +50,7 @@ export async function PUT(
     const body = await request.json();
     const { cardName, cardNumberLast4, bankName, cardType, creditLimit } = body;
 
-    const bankCard = await db.bankCard.update({
+    const bankCard = await prisma.bankCard.update({
       where: {
         id: params.id,
         userId: session.user.id,
@@ -76,26 +76,43 @@ export async function PUT(
 // DELETE a bank card
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    await db.bankCard.delete({
+    const card = await prisma.bankCard.findUnique({
       where: {
         id: params.id,
         userId: session.user.id,
       },
     });
 
-    return NextResponse.json({ message: "Bank card deleted successfully" });
+    if (!card) {
+      return NextResponse.json(
+        { error: "Card not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.bankCard.delete({
+      where: {
+        id: params.id,
+      },
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Error deleting bank card:", error);
     return NextResponse.json(
       { error: "Failed to delete bank card" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 } 

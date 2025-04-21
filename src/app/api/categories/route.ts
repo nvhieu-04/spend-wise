@@ -1,11 +1,30 @@
-import { CategoryService } from "~/server/category";
+import { NextResponse } from "next/server";
+import { auth } from "~/server/auth";
+import { prisma } from "../../../lib/prisma";
 
 export async function GET() {
   try {
-    const categories = await CategoryService.getAllCategories();
-    return Response.json(categories);
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const categories = await prisma.category.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return NextResponse.json(categories);
   } catch (error) {
-    return new Response("Internal Server Error", { status: 500 });
+    console.error("Error fetching categories:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch categories" },
+      { status: 500 }
+    );
   }
 }
 

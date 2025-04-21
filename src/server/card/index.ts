@@ -1,9 +1,9 @@
-import { db } from "~/server/db";
+import { prisma } from "~/server/db";
 import { type BankCard } from "@prisma/client";
 
 export class BankCardService {
   static async getUserCards(userId: string) {
-    return await db.bankCard.findMany({
+    return await prisma.bankCard.findMany({
       where: {
         userId,
       },
@@ -14,7 +14,7 @@ export class BankCardService {
   }
 
   static async getCardById(id: string, userId: string) {
-    return await db.bankCard.findFirst({
+    return await prisma.bankCard.findFirst({
       where: {
         id,
         userId,
@@ -33,7 +33,7 @@ export class BankCardService {
     cardType: string;
     creditLimit?: number;
   }) {
-    return await db.bankCard.create({
+    return await prisma.bankCard.create({
       data,
       include: {
         cashbackPolicies: true,
@@ -46,7 +46,7 @@ export class BankCardService {
     userId: string,
     data: Partial<Omit<BankCard, "id" | "userId" | "createdAt">>,
   ) {
-    return await db.bankCard.update({
+    return await prisma.bankCard.update({
       where: {
         id,
         userId,
@@ -59,7 +59,7 @@ export class BankCardService {
   }
 
   static async deleteCard(id: string, userId: string) {
-    return await db.bankCard.delete({
+    return await prisma.bankCard.delete({
       where: {
         id,
         userId,

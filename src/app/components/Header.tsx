@@ -3,25 +3,56 @@ import React from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
-export default function Header () {
+const Header = () => {
   const { data: session } = useSession();
+
   return (
-    <header className="flex items-center justify-between p-4 bg-gray-800 text-white">
-      <div className="text-lg font-bold">Spend Wise</div>
-      <nav>
-      </nav>
-      <div>
-        {
-          session ? (
-            <div className="flex items-center space-x-4">
-              <span className="text-sm">{session.user?.name}</span>
-              <Link href="/api/auth/signout" className="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Sign Out</Link>
-            </div>
-          ) : (
-            <Link href="/api/auth/signin" className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600">Sign In</Link>
-          )
-        }
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex-shrink-0">
+            <Link href="/" className="text-blue-600 text-xl font-bold hover:text-blue-700 transition-colors">
+              SpendWise
+            </Link>
+          </div>
+          
+          <nav className="flex items-center space-x-4">
+            {session ? (
+              <>
+                <Link
+                  href="/cards"
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  My Cards
+                </Link>
+                <Link
+                  href="/profile"
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Profile
+                </Link>
+                <Link
+                  href="api/auth/signout"
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Sign Out
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="api/auth/signin"
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Sign In
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
       </div>
     </header>
   );
-}
+};
+
+export default Header;

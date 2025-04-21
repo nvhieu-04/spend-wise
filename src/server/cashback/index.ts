@@ -1,9 +1,9 @@
-import { db } from "~/server/db";
+import { prisma } from "~/server/db";
 import { type CashbackPolicy } from "@prisma/client";
 
 export class CashbackPolicyService {
   static async getUserPolicies(userId: string) {
-    return await db.cashbackPolicy.findMany({
+    return await prisma.cashbackPolicy.findMany({
       where: {
         card: {
           userId,
@@ -17,7 +17,7 @@ export class CashbackPolicyService {
   }
 
   static async getPolicyById(id: string, userId: string) {
-    return await db.cashbackPolicy.findFirst({
+    return await prisma.cashbackPolicy.findFirst({
       where: {
         id,
         card: {
@@ -38,7 +38,7 @@ export class CashbackPolicyService {
     maxCashback?: number;
   }, userId: string) {
     // Verify card ownership
-    const card = await db.bankCard.findFirst({
+    const card = await prisma.bankCard.findFirst({
       where: {
         id: data.cardId,
         userId,
@@ -50,7 +50,7 @@ export class CashbackPolicyService {
     }
 
     // Verify category exists
-    const category = await db.category.findUnique({
+    const category = await prisma.category.findUnique({
       where: {
         id: data.categoryId,
       },
@@ -60,7 +60,7 @@ export class CashbackPolicyService {
       throw new Error("Category not found");
     }
 
-    return await db.cashbackPolicy.create({
+    return await prisma.cashbackPolicy.create({
       data,
       include: {
         card: true,
@@ -76,7 +76,7 @@ export class CashbackPolicyService {
   ) {
     // If categoryId is being updated, verify it exists
     if (data.categoryId) {
-      const category = await db.category.findUnique({
+      const category = await prisma.category.findUnique({
         where: {
           id: data.categoryId,
         },
@@ -87,7 +87,7 @@ export class CashbackPolicyService {
       }
     }
 
-    return await db.cashbackPolicy.update({
+    return await prisma.cashbackPolicy.update({
       where: {
         id,
         card: {
@@ -103,7 +103,7 @@ export class CashbackPolicyService {
   }
 
   static async deletePolicy(id: string, userId: string) {
-    return await db.cashbackPolicy.delete({
+    return await prisma.cashbackPolicy.delete({
       where: {
         id,
         card: {

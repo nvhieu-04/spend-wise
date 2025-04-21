@@ -1,16 +1,81 @@
 import React from 'react';
+import Link from 'next/link';
 
-export default function Footer() {
+const Footer = () => {
   return (
-    <footer className="flex items-center justify-between p-4 bg-gray-800 text-white">
-      <div className="text-sm">
-            &copy; {new Date().getFullYear()} Spend Wise. All rights reserved.
-      </div>
-      <div className="text-sm">
-        <a href="/privacy" className="hover:text-gray-400">Privacy Policy</a>
-        <span className="mx-2">|</span>
-        <a href="/terms" className="hover:text-gray-400">Terms of Service</a>
+    <footer className="bg-gray-50 border-t border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="text-blue-600 text-lg font-semibold mb-4">SpendWise</h3>
+            <p className="text-gray-600 text-sm">
+              Manage your bank cards, track spending, and maximize rewards in one place.
+            </p>
+          </div>
+          
+          <div>
+            <h3 className="text-gray-900 text-lg font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/"
+                  className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/cards"
+                  className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                >
+                  My Cards
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/profile"
+                  className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                >
+                  Profile
+                </Link>
+              </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-gray-900 text-lg font-semibold mb-4">Contact</h3>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="mailto:support@spendwise.com"
+                  className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                >
+                  support@spendwise.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://twitter.com/spendwise"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-blue-600 text-sm transition-colors"
+                >
+                  Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <p className="text-gray-500 text-sm text-center">
+            © {new Date().getFullYear()} SpendWise. All rights reserved.
+          </p>
+        </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;
