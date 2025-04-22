@@ -1,5 +1,6 @@
 import { prisma } from "~/server/db";
 import { type Transaction } from "@prisma/client";
+import { CashbackPolicyService } from "../cashback";
 
 export class TransactionService {
   static async getUserTransactions(userId: string) {
@@ -55,8 +56,21 @@ export class TransactionService {
       throw new Error("Card not found or unauthorized");
     }
 
+    // Calculate cashback if category is provided
+    let cashbackEarned = 0;
+    if (data.categoryId) {
+      cashbackEarned = await CashbackPolicyService.calculateCashback(
+        data.cardId,
+        data.categoryId,
+        data.amount
+      );
+    }
+
     return await prisma.transaction.create({
-      data,
+      data: {
+        ...data,
+        cashbackEarned,
+      },
       include: {
         card: true,
         category: true,

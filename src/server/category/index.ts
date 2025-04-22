@@ -2,8 +2,11 @@ import { prisma } from "~/server/db";
 import { type Category } from "@prisma/client";
 
 export class CategoryService {
-  static async getAllCategories() {
+  static async getAllCategories(cardId: string) {
     return await prisma.category.findMany({
+      where: {
+        cardId,
+      },
       orderBy: {
         name: "asc",
       },
@@ -25,16 +28,18 @@ export class CategoryService {
   static async createCategory(data: {
     name: string;
     description?: string;
+    cardId: string;
   }) {
-    // Check for duplicate name
-    const existingCategory = await prisma.category.findUnique({
+    // Check for duplicate name within the same card
+    const existingCategory = await prisma.category.findFirst({
       where: {
         name: data.name,
+        cardId: data.cardId,
       },
     });
 
     if (existingCategory) {
-      throw new Error("Category with this name already exists");
+      throw new Error("Category with this name already exists for this card");
     }
 
     return await prisma.category.create({
@@ -44,13 +49,22 @@ export class CategoryService {
 
   static async updateCategory(
     id: string,
-    data: Partial<Omit<Category, "id" | "createdAt">>,
+    data: Partial<Omit<Category, "id" | "createdAt" | "cardId">>,
   ) {
-    // If name is being updated, check for duplicates
+    // If name is being updated, check for duplicates within the same card
     if (data.name) {
+      const currentCategory = await prisma.category.findUnique({
+        where: { id },
+      });
+
+      if (!currentCategory) {
+        throw new Error("Category not found");
+      }
+
       const existingCategory = await prisma.category.findFirst({
         where: {
           name: data.name,
+          cardId: currentCategory.cardId,
           id: {
             not: id,
           },
@@ -58,7 +72,7 @@ export class CategoryService {
       });
 
       if (existingCategory) {
-        throw new Error("Category with this name already exists");
+        throw new Error("Category with this name already exists for this card");
       }
     }
 

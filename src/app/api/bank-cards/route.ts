@@ -18,6 +18,15 @@ export async function GET() {
       where: {
         userId: session.user.id,
       },
+      select: {
+        id: true,
+        cardName: true,
+        bankName: true,
+        cardType: true,
+        cardNumberLast4: true,
+        creditLimit: true,
+        cardColor: true,
+      },
     });
 
     return NextResponse.json(cards);
@@ -49,7 +58,8 @@ export async function POST(request: Request) {
       cardNumberLast4, 
       creditLimit,
       statementClosingDate,
-      paymentDueDate 
+      paymentDueDate,
+      cardColor 
     } = body;
 
     // Validate required fields
@@ -64,6 +74,14 @@ export async function POST(request: Request) {
     if (!/^\d{4}$/.test(cardNumberLast4)) {
       return NextResponse.json(
         { error: "Invalid card number format" },
+        { status: 400 }
+      );
+    }
+
+    // Validate card color format if provided
+    if (cardColor && !/^#[0-9A-Fa-f]{6}$/.test(cardColor)) {
+      return NextResponse.json(
+        { error: "Invalid card color format" },
         { status: 400 }
       );
     }
@@ -95,6 +113,7 @@ export async function POST(request: Request) {
         creditLimit,
         statementClosingDate: parsedStatementClosingDate,
         paymentDueDate: parsedPaymentDueDate,
+        cardColor: cardColor || null,
         userId: session.user.id,
       },
     });

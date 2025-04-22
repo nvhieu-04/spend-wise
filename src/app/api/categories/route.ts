@@ -1,26 +1,48 @@
 import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "~/server/db";
 
-export async function GET() {
+// GET all categories for a specific card
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const cardId = searchParams.get("cardId");
+
+    if (!cardId) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Card ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the card belongs to the user
+    const card = await prisma.bankCard.findFirst({
+      where: {
+        id: cardId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!card) {
+      return NextResponse.json(
+        { error: "Card not found or unauthorized" },
+        { status: 404 }
       );
     }
 
     const categories = await prisma.category.findMany({
-      orderBy: {
-        name: "asc",
+      where: {
+        cardId,
       },
     });
 
     return NextResponse.json(categories);
   } catch (error) {
-    console.error("Error fetching categories:", error);
     return NextResponse.json(
       { error: "Failed to fetch categories" },
       { status: 500 }
@@ -28,16 +50,67 @@ export async function GET() {
   }
 }
 
+// POST create a new category for a specific card
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const category = await CategoryService.createCategory(data);
-
-    return Response.json(category);
-  } catch (error) {
-    if (error instanceof Error && error.message === "Category with this name already exists") {
-      return new Response("Category with this name already exists", { status: 400 });
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return new Response("Internal Server Error", { status: 500 });
+
+    const data = await request.json();
+    const { name, description, cardId } = data;
+
+    if (!name || !cardId) {
+      return NextResponse.json(
+        { error: "Name and card ID are required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the card belongs to the user
+    const card = await prisma.bankCard.findFirst({
+      where: {
+        id: cardId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!card) {
+      return NextResponse.json(
+        { error: "Card not found or unauthorized" },
+        { status: 404 }
+      );
+    }
+
+    // Check if category with same name already exists for this card
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        name,
+        cardId,
+      },
+    });
+
+    if (existingCategory) {
+      return NextResponse.json(
+        { error: "Category with this name already exists for this card" },
+        { status: 400 }
+      );
+    }
+
+    const category = await prisma.category.create({
+      data: {
+        name,
+        description,
+        cardId,
+      },
+    });
+
+    return NextResponse.json(category);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to create category" },
+      { status: 500 }
+    );
   }
 } 

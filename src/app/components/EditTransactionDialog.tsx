@@ -7,69 +7,71 @@ interface Category {
   name: string;
 }
 
-interface CashbackPolicy {
+interface Transaction {
   id: string;
+  amount: number;
+  currency: string;
+  transactionDate: string;
+  merchantName: string;
   categoryId: string;
-  cashbackPercentage: number;
-  maxCashback: number | null;
-  category: {
-    name: string;
-  };
+  isExpense: boolean;
+  cashbackEarned: number;
 }
 
-interface AddTransactionDialogProps {
+interface EditTransactionDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  cardId: string;
+  transaction: Transaction | null;
   onSuccess: () => void;
 }
 
-const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
+const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
   isOpen,
   onClose,
-  cardId,
+  transaction,
   onSuccess,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [cashbackPolicies, setCashbackPolicies] = useState<CashbackPolicy[]>([]);
   const [formData, setFormData] = useState({
     amount: "",
-    currency: "VNĐ",
-    transactionDate: new Date().toISOString().split("T")[0],
+    transactionDate: "",
     merchantName: "",
     categoryId: "",
     type: "expense",
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        // Fetch categories for the specific card
-        const categoriesResponse = await fetch(`/api/categories?cardId=${cardId}`);
-        if (!categoriesResponse.ok) {
+        const response = await fetch("/api/categories");
+        if (!response.ok) {
           throw new Error("Failed to fetch categories");
         }
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData);
-
-        // Fetch cashback policies
-        const policiesResponse = await fetch("/api/cashback-policies");
-        if (!policiesResponse.ok) {
-          throw new Error("Failed to fetch cashback policies");
-        }
-        const policiesData = await policiesResponse.json();
-        setCashbackPolicies(policiesData);
+        const data = await response.json();
+        setCategories(data);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching categories:", err);
       }
     };
 
     if (isOpen) {
-      fetchData();
+      fetchCategories();
     }
-  }, [isOpen, cardId]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (transaction) {
+      setFormData({
+        amount: Math.abs(transaction.amount).toString(),
+        transactionDate: transaction.transactionDate.split("T")[0],
+        merchantName: transaction.merchantName,
+        categoryId: transaction.categoryId,
+        type: transaction.isExpense ? "expense" : "refund",
+      });
+    }
+  }, [transaction]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,26 +82,29 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
       const amount = parseNumberFromFormatted(formData.amount);
       const finalAmount = formData.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
 
-      const response = await fetch(`/api/bank-cards/${cardId}/transactions`, {
-        method: "POST",
+      const response = await fetch(`/api/transactions/${transaction?.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
           amount: finalAmount,
+          transactionDate: formData.transactionDate,
+          merchantName: formData.merchantName,
+          categoryId: formData.categoryId,
+          type: formData.type,
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to create transaction");
+        throw new Error(data.error || "Failed to update transaction");
       }
 
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error creating transaction:", error);
+      console.error("Error updating transaction:", error);
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsSubmitting(false);
@@ -123,36 +128,14 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     }));
   };
 
-  // Calculate cashback for the selected category
-  const calculateCashback = () => {
-    if (!formData.categoryId || !formData.amount) return null;
-
-    const policy = cashbackPolicies.find(
-      (p) => p.categoryId === formData.categoryId
-    );
-
-    if (!policy) return null;
-
-    const amount = parseNumberFromFormatted(formData.amount);
-    const cashback = (amount * policy.cashbackPercentage) / 100;
-    const finalCashback = policy.maxCashback 
-      ? Math.min(cashback, policy.maxCashback)
-      : cashback;
-
-    return {
-      percentage: policy.cashbackPercentage,
-      amount: finalCashback,
-    };
-  };
-
-  const cashbackInfo = calculateCashback();
+  if (!transaction) return null;
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Add New Transaction"
-      description="Enter the details of your transaction below."
+      title="Edit Transaction"
+      description="Update the details of your transaction below."
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -193,7 +176,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
               placeholder="0"
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">{formData.currency}</span>
+              <span className="text-gray-500 sm:text-sm">VNĐ</span>
             </div>
           </div>
         </div>
@@ -249,17 +232,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
           </select>
         </div>
 
-        {cashbackInfo && (
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-gray-900">
-              Cashback Policy: {cashbackInfo.percentage}%
-            </p>
-            <p className="text-lg font-semibold text-blue-600 mt-1">
-              Estimated Cashback: {formatNumberWithDots(cashbackInfo.amount)} {formData.currency}
-            </p>
-          </div>
-        )}
-
         <DialogFooter>
           <DialogButton
             variant="secondary"
@@ -272,7 +244,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Adding..." : "Add Transaction"}
+            {isSubmitting ? "Updating..." : "Update Transaction"}
           </DialogButton>
         </DialogFooter>
       </form>
@@ -280,4 +252,4 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
   );
 };
 
-export default AddTransactionDialog; 
+export default EditTransactionDialog; 

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
-import { db } from "~/server/db";
+import { CategoryService } from "~/server/category";
 
 // GET a specific category
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -13,28 +13,17 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const category = await db.category.findUnique({
-      where: {
-        id: params.id,
-      },
-      include: {
-        transactions: true,
-        cashbackPolicies: true,
-      },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 },
-      );
-    }
-
+    const category = await CategoryService.getCategoryById(params.id);
     return NextResponse.json(category);
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "Category not found") {
+        return NextResponse.json({ error: error.message }, { status: 404 });
+      }
+    }
     return NextResponse.json(
       { error: "Failed to fetch category" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -42,7 +31,7 @@ export async function GET(
 // PUT update a category
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -50,47 +39,22 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { name, description } = body;
-
-    // If name is being updated, check if it already exists
-    if (name) {
-      const existingCategory = await db.category.findFirst({
-        where: {
-          name,
-          id: {
-            not: params.id,
-          },
-        },
-      });
-
-      if (existingCategory) {
-        return NextResponse.json(
-          { error: "Category with this name already exists" },
-          { status: 409 },
-        );
-      }
-    }
-
-    const category = await db.category.update({
-      where: {
-        id: params.id,
-      },
-      data: {
-        name,
-        description,
-      },
-      include: {
-        transactions: true,
-        cashbackPolicies: true,
-      },
-    });
+    const data = await request.json();
+    const category = await CategoryService.updateCategory(params.id, data);
 
     return NextResponse.json(category);
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "Category with this name already exists") {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      if (error.message === "Category not found") {
+        return NextResponse.json({ error: error.message }, { status: 404 });
+      }
+    }
     return NextResponse.json(
       { error: "Failed to update category" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -98,7 +62,7 @@ export async function PUT(
 // DELETE a category
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -106,44 +70,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if category is being used in transactions or cashback policies
-    const category = await db.category.findUnique({
-      where: {
-        id: params.id,
-      },
-      include: {
-        transactions: true,
-        cashbackPolicies: true,
-      },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 },
-      );
-    }
-
-    if (category.transactions.length > 0 || category.cashbackPolicies.length > 0) {
-      return NextResponse.json(
-        {
-          error: "Cannot delete category that is being used in transactions or cashback policies",
-        },
-        { status: 400 },
-      );
-    }
-
-    await db.category.delete({
-      where: {
-        id: params.id,
-      },
-    });
-
+    await CategoryService.deleteCategory(params.id);
     return NextResponse.json({ message: "Category deleted successfully" });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "Category not found") {
+        return NextResponse.json({ error: error.message }, { status: 404 });
+      }
+      if (error.message === "Cannot delete category that is being used in transactions or cashback policies") {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+    }
     return NextResponse.json(
       { error: "Failed to delete category" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 } 

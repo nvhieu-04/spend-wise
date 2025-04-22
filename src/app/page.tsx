@@ -1,8 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import BankCard from "./components/BankCard";
 import Link from "next/link";
+import BankCard from "./components/BankCard";
+import AddBankCardDialog from "./components/AddBankCardDialog";
 import { useSession } from "next-auth/react";
+import PaymentNotification from './components/PaymentNotification';
 
 interface BankCard {
   id: string;
@@ -11,27 +13,15 @@ interface BankCard {
   cardType: string;
   cardNumberLast4: string;
   creditLimit?: number;
+  cardColor?: string;
 }
-
-const AddCardButton = () => (
-  <Link href="/cards/new">
-    <div className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group aspect-[1.7/1] flex flex-col items-center justify-center bg-white/50">
-      <div className="w-12 h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-        <svg className="w-6 h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-        </svg>
-      </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-1">Add New Card</h3>
-      <p className="text-gray-500">Click to add another bank card</p>
-    </div>
-  </Link>
-);
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [cards, setCards] = useState<BankCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
 
   const fetchCards = async () => {
     try {
@@ -126,26 +116,47 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Bank Cards</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cards.map((card) => (
-            <BankCard
-              key={card.id}
-              id={card.id}
-              cardName={card.cardName}
-              bankName={card.bankName}
-              cardType={card.cardType}
-              cardNumberLast4={card.cardNumberLast4}
-              creditLimit={card.creditLimit}
-              onDelete={handleDeleteCard}
-            />
-          ))}
-          <AddCardButton />
+    <div className="container mx-auto px-4 py-8">
+      <PaymentNotification />
+      <div className="min-h-screen bg-white text-gray-900 p-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">My Bank Cards</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cards.map((card) => (
+              <BankCard
+                key={card.id}
+                id={card.id}
+                cardName={card.cardName}
+                bankName={card.bankName}
+                cardType={card.cardType}
+                cardNumberLast4={card.cardNumberLast4}
+                creditLimit={card.creditLimit}
+                cardColor={card.cardColor}
+                onDelete={handleDeleteCard}
+              />
+            ))}
+            <button
+              onClick={() => setIsAddCardDialogOpen(true)}
+              className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group aspect-[1.7/1] flex flex-col items-center justify-center bg-white/50"
+            >
+              <div className="w-12 h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
+                <svg className="w-6 h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">Add New Card</h3>
+              <p className="text-gray-500">Click to add another bank card</p>
+            </button>
+          </div>
         </div>
       </div>
+
+      <AddBankCardDialog
+        isOpen={isAddCardDialogOpen}
+        onClose={() => setIsAddCardDialogOpen(false)}
+        onSuccess={fetchCards}
+      />
     </div>
   );
 }

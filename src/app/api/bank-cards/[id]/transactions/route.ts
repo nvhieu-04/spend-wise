@@ -15,17 +15,62 @@ export async function GET(
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const statementDate = searchParams.get("statementDate");
+    const filterType = searchParams.get("filterType");
+
+    let startDate: Date | undefined;
+    let endDate: Date | undefined;
+
+    if (filterType === "statement" && statementDate) {
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth();
+      const statementDay = parseInt(statementDate, 10);
+
+      // Calculate the statement period
+      if (currentDate.getDate() < statementDay) {
+        // If current date is before statement date, show from last month's statement date to today
+        startDate = new Date(currentYear, currentMonth - 1, statementDay);
+        endDate = currentDate;
+      } else {
+        // If current date is after statement date, show from this month's statement date to today
+        startDate = new Date(currentYear, currentMonth, statementDay);
+        endDate = currentDate;
+      }
+
+      // Ensure we don't filter out any transactions
+      if (startDate && endDate) {
+        console.log(`Statement period: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+      }
+    }
+
     const transactions = await prisma.transaction.findMany({
       where: {
         cardId: params.id,
         card: {
           userId: session.user.id,
         },
+        ...(startDate && endDate && {
+          transactionDate: {
+            gte: startDate,
+            lte: endDate,
+          },
+        }),
       },
       include: {
         category: {
           select: {
             name: true,
+          },
+        },
+        card: {
+          include: {
+            cashbackPolicies: {
+              include: {
+                category: true,
+              },
+            },
           },
         },
       },
@@ -34,7 +79,47 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(transactions);
+    // Calculate cashback for each transaction
+    const transactionsWithCashback = transactions.map(transaction => {
+      if (!transaction.categoryId || !transaction.isExpense) {
+        return {
+          ...transaction,
+          cashbackEarned: 0,
+        };
+      }
+
+      const policy = transaction.card.cashbackPolicies.find(
+        p => p.categoryId === transaction.categoryId
+      );
+
+      if (!policy) {
+        return {
+          ...transaction,
+          cashbackEarned: 0,
+        };
+      }
+
+      const cashbackAmount = (transaction.amount * policy.cashbackPercentage) / 100;
+      const finalCashback = policy.maxCashback 
+        ? Math.min(cashbackAmount, policy.maxCashback)
+        : cashbackAmount;
+
+      return {
+        ...transaction,
+        cashbackEarned: finalCashback,
+      };
+    });
+
+    // Calculate total cashback
+    const totalCashback = transactionsWithCashback.reduce(
+      (sum, transaction) => sum + (transaction.cashbackEarned || 0),
+      0
+    );
+
+    return NextResponse.json({
+      transactions: transactionsWithCashback,
+      totalCashback,
+    });
   } catch (error) {
     console.error("Error fetching transactions:", error);
     return NextResponse.json(
@@ -90,6 +175,13 @@ export async function POST(
         id: params.id,
         userId: session.user.id,
       },
+      include: {
+        cashbackPolicies: {
+          include: {
+            category: true,
+          },
+        },
+      },
     });
 
     if (!card) {
@@ -113,6 +205,18 @@ export async function POST(
       }
     }
 
+    // Calculate cashback if it's an expense and has a category
+    let cashbackEarned = 0;
+    if (categoryId && amount < 0) {
+      const policy = card.cashbackPolicies.find(p => p.categoryId === categoryId);
+      if (policy) {
+        const cashbackAmount = (Math.abs(amount) * policy.cashbackPercentage) / 100;
+        cashbackEarned = policy.maxCashback 
+          ? Math.min(cashbackAmount, policy.maxCashback)
+          : cashbackAmount;
+      }
+    }
+
     // Create the transaction
     const transaction = await prisma.transaction.create({
       data: {
@@ -123,6 +227,7 @@ export async function POST(
         categoryId: categoryId || null,
         cardId: params.id,
         isExpense: amount < 0, // true for expenses (negative), false for refunds (positive)
+        cashbackEarned,
       },
       include: {
         category: {

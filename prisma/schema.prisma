@@ -56,6 +56,7 @@ model BankCard {
   cardNumberLast4  String
   bankName         String
   cardType         String
+  cardColor        String?          // Color in hex format (e.g. #FF0000)
   creditLimit      Float?
   statementClosingDate Int?             // Day of month (1-31)
   paymentDueDate       Int?             // Day of month (1-31)
@@ -63,6 +64,7 @@ model BankCard {
   user             User             @relation(fields: [userId], references: [id])
   cashbackPolicies CashbackPolicy[] @relation("BankCardToCashbackPolicy")
   transactions     Transaction[]    @relation("BankCardToTransaction")
+  categories       Category[]       @relation("BankCardToCategory")
 
   @@index([userId], map: "BankCard_userId_fkey")
 }
@@ -101,9 +103,14 @@ model CashbackPolicy {
 
 model Category {
   id               String           @id @default(uuid()) @db.Char(36)
-  name             String           @unique
+  name             String
   description      String?
   createdAt        DateTime         @default(now())
+  cardId           String           @db.Char(36)
+  card             BankCard         @relation("BankCardToCategory", fields: [cardId], references: [id], onDelete: Cascade)
   cashbackPolicies CashbackPolicy[]
   transactions     Transaction[]
+
+  @@unique([name, cardId])
+  @@index([cardId], map: "Category_cardId_fkey")
 }
