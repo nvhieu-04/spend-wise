@@ -34,6 +34,17 @@ export default function NotificationIcon() {
     };
 
     fetchNotifications();
+
+    // Listen for notification updates
+    const handleNotificationUpdate = (event: CustomEvent) => {
+      setNotifications(event.detail);
+    };
+
+    window.addEventListener('notifications-updated', handleNotificationUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('notifications-updated', handleNotificationUpdate as EventListener);
+    };
   }, []);
 
   return (
