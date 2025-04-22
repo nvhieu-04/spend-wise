@@ -2,6 +2,7 @@
 import React from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import NotificationIcon from "./NotificationIcon";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -19,18 +20,7 @@ const Header = () => {
           <nav className="flex items-center space-x-4">
             {session ? (
               <>
-                <Link
-                  href="/cards"
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  My Cards
-                </Link>
-                <Link
-                  href="/profile"
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Profile
-                </Link>
+                <NotificationIcon />
                 <Link
                   href="api/auth/signout"
                   className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"

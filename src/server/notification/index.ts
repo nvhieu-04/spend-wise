@@ -1,5 +1,5 @@
-import { prisma } from '../prisma';
 import { format } from 'date-fns';
+import { prisma } from '~/lib/prisma';
 
 export class NotificationService {
   static async getUpcomingPaymentNotifications(userId: string) {
