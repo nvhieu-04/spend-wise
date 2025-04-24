@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String     @id @default(uuid()) @db.Char(36)
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   email         String     @unique
   createdAt     DateTime   @default(now())
@@ -21,8 +21,8 @@ model User {
 }
 
 model Account {
-  id                String  @id @default(uuid()) @db.Char(36)
-  userId            String  @db.Char(36)
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
   type              String
   provider          String
   providerAccountId String
@@ -36,22 +36,22 @@ model Account {
   user              User    @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
-  @@index([userId], map: "Account_userId_fkey")
+  @@index([userId])
 }
 
 model Session {
-  id           String   @id @default(uuid()) @db.Char(36)
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
-  userId       String   @db.Char(36)
+  userId       String   @db.ObjectId
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
 
-  @@index([userId], map: "Session_userId_fkey")
+  @@index([userId])
 }
 
 model BankCard {
-  id               String           @id @default(uuid()) @db.Char(36)
-  userId           String           @db.Char(36)
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String           @db.ObjectId
   cardName         String
   cardNumberLast4  String
   bankName         String
@@ -66,51 +66,51 @@ model BankCard {
   transactions     Transaction[]    @relation("BankCardToTransaction")
   categories       Category[]       @relation("BankCardToCategory")
 
-  @@index([userId], map: "BankCard_userId_fkey")
+  @@index([userId])
 }
 
 model Transaction {
-  id              String    @id @default(uuid()) @db.Char(36)
-  cardId          String    @db.Char(36)
-  amount          Float
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  cardId          String    @db.ObjectId
+  amount          Float     // Store original amount (negative for expenses, positive for refunds)
   currency        String
   transactionDate DateTime
   merchantName    String?
-  categoryId      String?   @db.Char(36)
-  cashbackEarned  Float?
+  categoryId      String?   @db.ObjectId
+  cashbackEarned  Float?    // Positive for expenses, negative for refunds
   createdAt       DateTime  @default(now())
   isExpense       Boolean   @default(true)
   card            BankCard  @relation("BankCardToTransaction", fields: [cardId], references: [id], onDelete: Cascade)
   category        Category? @relation(fields: [categoryId], references: [id])
 
-  @@index([cardId], map: "Transaction_cardId_fkey")
-  @@index([categoryId], map: "Transaction_categoryId_fkey")
+  @@index([cardId])
+  @@index([categoryId])
 }
 
 model CashbackPolicy {
-  id                 String   @id @default(uuid()) @db.Char(36)
-  cardId             String   @db.Char(36)
-  categoryId         String   @db.Char(36)
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  cardId             String   @db.ObjectId
+  categoryId         String   @db.ObjectId
   cashbackPercentage Float
   maxCashback        Float?
   createdAt          DateTime @default(now())
   card               BankCard @relation("BankCardToCashbackPolicy", fields: [cardId], references: [id], onDelete: Cascade)
   category           Category @relation(fields: [categoryId], references: [id])
 
-  @@index([cardId], map: "CashbackPolicy_cardId_fkey")
-  @@index([categoryId], map: "CashbackPolicy_categoryId_fkey")
+  @@index([cardId])
+  @@index([categoryId])
 }
 
 model Category {
-  id               String           @id @default(uuid()) @db.Char(36)
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
   name             String
   description      String?
   createdAt        DateTime         @default(now())
-  cardId           String           @db.Char(36)
+  cardId           String           @db.ObjectId
   card             BankCard         @relation("BankCardToCategory", fields: [cardId], references: [id], onDelete: Cascade)
   cashbackPolicies CashbackPolicy[]
   transactions     Transaction[]
 
   @@unique([name, cardId])
-  @@index([cardId], map: "Category_cardId_fkey")
+  @@index([cardId])
 }

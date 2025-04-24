@@ -13,7 +13,7 @@ interface Transaction {
   currency: string;
   transactionDate: string;
   merchantName: string;
-  categoryId: string;
+  categoryId: string | null | undefined;
   isExpense: boolean;
   cashbackEarned: number;
 }
@@ -23,6 +23,15 @@ interface EditTransactionDialogProps {
   onClose: () => void;
   transaction: Transaction | null;
   onSuccess: () => void;
+  cardId: string;
+}
+
+interface FormData {
+  amount: string;
+  transactionDate: string;
+  merchantName: string;
+  categoryId: string;
+  type: "expense" | "refund";
 }
 
 const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
@@ -30,11 +39,12 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
   onClose,
   transaction,
   onSuccess,
+  cardId,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     amount: "",
     transactionDate: "",
     merchantName: "",
@@ -45,7 +55,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch(`/api/categories?cardId=${cardId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch categories");
         }
@@ -59,16 +69,24 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
     if (isOpen) {
       fetchCategories();
     }
-  }, [isOpen]);
+  }, [isOpen, cardId]);
 
   useEffect(() => {
     if (transaction) {
       setFormData({
         amount: Math.abs(transaction.amount).toString(),
-        transactionDate: transaction.transactionDate.split("T")[0],
+        transactionDate: transaction.transactionDate.split("T")[0] || "",
         merchantName: transaction.merchantName,
-        categoryId: transaction.categoryId,
+        categoryId: String(transaction.categoryId || ""),
         type: transaction.isExpense ? "expense" : "refund",
+      });
+    } else {
+      setFormData({
+        amount: "",
+        transactionDate: "",
+        merchantName: "",
+        categoryId: "",
+        type: "expense",
       });
     }
   }, [transaction]);

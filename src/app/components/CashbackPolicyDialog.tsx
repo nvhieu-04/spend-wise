@@ -32,7 +32,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch(`/api/categories?cardId=${cardId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch categories");
         }
@@ -47,7 +47,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
     if (isOpen) {
       fetchCategories();
     }
-  }, [isOpen]);
+  }, [isOpen, cardId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +64,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
           cardId,
           categoryId: formData.categoryId,
           cashbackPercentage: parseFloat(formData.cashbackPercentage),
-          maxCashback: formData.maxCashback ? parseFloat(formData.maxCashback) : null,
+          maxCashback: formData.maxCashback ? parseInt(formData.maxCashback.replace(/\./g, '')) : null,
         }),
       });
 

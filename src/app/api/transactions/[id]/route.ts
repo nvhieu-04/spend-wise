@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
-import { db } from "~/server/db";
+import { prisma } from "~/server/db";
 
 // GET a specific transaction
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const transaction = await db.transaction.findFirst({
+    const transaction = await prisma.transaction.findFirst({
       where: {
         id: params.id,
         card: {
@@ -63,7 +63,7 @@ export async function PUT(
       cashbackEarned,
     } = body;
 
-    const transaction = await db.transaction.update({
+    const transaction = await prisma.transaction.update({
       where: {
         id: params.id,
         card: {
@@ -104,7 +104,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await db.transaction.delete({
+    await prisma.transaction.delete({
       where: {
         id: params.id,
         card: {

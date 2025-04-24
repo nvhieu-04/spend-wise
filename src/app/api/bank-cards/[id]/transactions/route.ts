@@ -4,9 +4,10 @@ import { prisma } from "../../../../../lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -47,7 +48,7 @@ export async function GET(
 
     const transactions = await prisma.transaction.findMany({
       where: {
-        cardId: params.id,
+        cardId: id,
         card: {
           userId: session.user.id,
         },
@@ -81,7 +82,7 @@ export async function GET(
 
     // Calculate cashback for each transaction
     const transactionsWithCashback = transactions.map(transaction => {
-      if (!transaction.categoryId || !transaction.isExpense) {
+      if (!transaction.categoryId) {
         return {
           ...transaction,
           cashbackEarned: 0,
@@ -99,14 +100,14 @@ export async function GET(
         };
       }
 
-      const cashbackAmount = (transaction.amount * policy.cashbackPercentage) / 100;
+      const cashbackAmount = (Math.abs(transaction.amount) * policy.cashbackPercentage) / 100;
       const finalCashback = policy.maxCashback 
         ? Math.min(cashbackAmount, policy.maxCashback)
         : cashbackAmount;
 
       return {
         ...transaction,
-        cashbackEarned: finalCashback,
+        cashbackEarned: transaction.isExpense ? finalCashback : -finalCashback,
       };
     });
 
@@ -131,9 +132,10 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = await context.params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -172,7 +174,7 @@ export async function POST(
     // Check if the card belongs to the user
     const card = await prisma.bankCard.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -207,25 +209,26 @@ export async function POST(
 
     // Calculate cashback if it's an expense and has a category
     let cashbackEarned = 0;
-    if (categoryId && amount < 0) {
+    if (categoryId) {
       const policy = card.cashbackPolicies.find(p => p.categoryId === categoryId);
       if (policy) {
         const cashbackAmount = (Math.abs(amount) * policy.cashbackPercentage) / 100;
-        cashbackEarned = policy.maxCashback 
+        const finalCashback = policy.maxCashback 
           ? Math.min(cashbackAmount, policy.maxCashback)
           : cashbackAmount;
+        cashbackEarned = amount < 0 ? finalCashback : -finalCashback;
       }
     }
 
     // Create the transaction
     const transaction = await prisma.transaction.create({
       data: {
-        amount: Math.abs(amount), // Store absolute value
+        amount, // Store original amount (negative for expenses, positive for refunds)
         currency,
         transactionDate: new Date(transactionDate),
         merchantName,
         categoryId: categoryId || null,
-        cardId: params.id,
+        cardId: id,
         isExpense: amount < 0, // true for expenses (negative), false for refunds (positive)
         cashbackEarned,
       },

@@ -33,7 +33,17 @@ export async function GET(
         userId: session.user.id,
       },
       include: {
-        cashbackPolicies: true,
+        cashbackPolicies: {
+          include: {
+            category: true
+          }
+        },
+        transactions: {
+          select: {
+            amount: true,
+            isExpense: true,
+          },
+        },
       },
     });
 
@@ -41,25 +51,23 @@ export async function GET(
       return new NextResponse("Card not found", { status: 404 });
     }
 
-    // Calculate current spending and repayment
-    const transactions = await prisma.$queryRaw<Transaction[]>`
-      SELECT amount, isExpense
-      FROM Transaction
-      WHERE cardId = ${params.id}
-    `;
+    // Calculate current spending and repayment using the included transactions
+    const currentSpending = card.transactions
+      .filter((t) => t.isExpense)
+      .reduce((sum, t) => sum + t.amount, 0);
 
-    const currentSpending = transactions
-      .filter((t: Transaction) => t.isExpense)
-      .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+    const currentRepayment = card.transactions
+      .filter((t) => !t.isExpense)
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-    const currentRepayment = transactions
-      .filter((t: Transaction) => !t.isExpense)
-      .reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0);
+    // Filter out policies with deleted categories
+    const validPolicies = card.cashbackPolicies.filter(policy => policy.category !== null);
 
     return NextResponse.json({
       ...card,
       currentSpending,
       currentRepayment,
+      cashbackPolicies: validPolicies,
     });
   } catch (error) {
     console.error("Error fetching card:", error);

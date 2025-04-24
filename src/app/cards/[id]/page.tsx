@@ -136,6 +136,7 @@ export default function CardDetailPage() {
     if (transactions.length === 0) return;
 
     let filtered = [...transactions];
+    let periodCashback = 0;
 
     if (filterType === "week") {
       const startOfWeek = new Date(selectedWeek);
@@ -149,12 +150,11 @@ export default function CardDetailPage() {
       });
 
       // Calculate total cashback for the week
-      const weeklyCashback = filtered.reduce(
+      periodCashback = filtered.reduce(
         (sum, transaction) => sum + (transaction.cashbackEarned || 0),
         0
       );
-      setTotalCashback(weeklyCashback);
-    } else if (selectedStatementDate) {
+    } else if (filterType === "statement") {
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
       const currentMonth = currentDate.getMonth();
@@ -163,13 +163,13 @@ export default function CardDetailPage() {
       let statementStartDate: Date;
       let statementEndDate: Date;
       
-      if (currentDate.getDate() < selectedStatementDate) {
+      if (currentDate.getDate() < selectedStatementDate!) {
         // If current date is before statement date, show from last month's statement date to today
-        statementStartDate = new Date(currentYear, currentMonth - 1, selectedStatementDate);
+        statementStartDate = new Date(currentYear, currentMonth - 1, selectedStatementDate!);
         statementEndDate = currentDate;
       } else {
         // If current date is after statement date, show from this month's statement date to today
-        statementStartDate = new Date(currentYear, currentMonth, selectedStatementDate);
+        statementStartDate = new Date(currentYear, currentMonth, selectedStatementDate!);
         statementEndDate = currentDate;
       }
 
@@ -179,13 +179,13 @@ export default function CardDetailPage() {
       });
 
       // Calculate total cashback for the statement period
-      const statementPeriodCashback = filtered.reduce(
+      periodCashback = filtered.reduce(
         (sum, transaction) => sum + (transaction.cashbackEarned || 0),
         0
       );
-      setTotalCashback(statementPeriodCashback);
     }
 
+    setTotalCashback(periodCashback);
     setFilteredTransactions(filtered);
   }, [transactions, filterType, selectedWeek, selectedStatementDate]);
 
@@ -543,14 +543,14 @@ export default function CardDetailPage() {
                 </div>
               )}
               <div className="space-y-4">
-                {card.cashbackPolicies.map((policy) => (
+                {card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
                   <div
                     key={policy.id}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                   >
                     <div>
                       <h3 className="text-sm font-medium text-gray-900">
-                        {policy.category?.name || "Unknown Category"}
+                        {policy.category?.name}
                       </h3>
                       <p className="text-sm text-gray-500">
                         {policy.cashbackPercentage}% cashback
@@ -864,6 +864,7 @@ export default function CardDetailPage() {
         }}
         transaction={selectedTransaction}
         onSuccess={fetchTransactions}
+        cardId={cardId}
       />
 
       <Dialog
