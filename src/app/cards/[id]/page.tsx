@@ -1,18 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import TransactionItem from "../../components/TransactionItem";
 import CreditLimitBar from "~/components/CreditLimitBar";
 import AddTransactionDialog from "../../components/AddTransactionDialog";
 import CategoryDialog from "../../components/CategoryDialog";
-import { format, subMonths, addMonths, startOfMonth, endOfMonth } from "date-fns";
-import { Listbox } from "@headlessui/react";
-import { ChevronUpDownIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { format } from "date-fns";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { formatNumberWithDots } from "~/lib/utils";
 import CashbackPolicyDialog from "~/app/components/CashbackPolicyDialog";
 import EditTransactionDialog from "../../components/EditTransactionDialog";
-import { Dialog, DialogFooter, DialogButton } from "../../components/ui/dialog";
+import Dialog, { DialogButton, DialogFooter } from "~/app/components/Dialog";
 
 interface Category {
   id: string;
@@ -66,7 +64,6 @@ interface TransactionsResponse {
 
 export default function CardDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const cardId = params.id as string;
   const [card, setCard] = useState<CardDetails | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -83,16 +80,9 @@ export default function CardDetailPage() {
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [selectedStatementDate, setSelectedStatementDate] = useState<number | null>(null);
   const [isAddPolicyDialogOpen, setIsAddPolicyDialogOpen] = useState(false);
-  const [newPolicy, setNewPolicy] = useState({
-    categoryId: "",
-    cashbackPercentage: "",
-    maxCashback: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAddPolicyDialog, setShowAddPolicyDialog] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedMonth] = useState(new Date());
   const [isEditColorDialogOpen, setIsEditColorDialogOpen] = useState(false);
 
   const fetchCardDetails = async () => {
@@ -207,10 +197,6 @@ export default function CardDetailPage() {
     fetchTransactions();
   };
 
-  const handleMonthChange = (direction: "prev" | "next") => {
-    setSelectedMonth(prev => direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1));
-  };
-
   const fetchCategories = async () => {
     try {
       const response = await fetch(`/api/categories?cardId=${cardId}`);
@@ -246,7 +232,7 @@ export default function CardDetailPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to delete category");
+        throw new Error(data.error ?? "Failed to delete category");
       }
 
       setCategories(categories.filter((c) => c.id !== categoryId));
@@ -262,51 +248,6 @@ export default function CardDetailPage() {
   const handleCategoryDialogSuccess = () => {
     fetchCategories();
     fetchCardDetails(); // Refresh card details to update cashback policies
-  };
-
-  const handleAddPolicy = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/cashback-policies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cardId: cardId,
-          categoryId: newPolicy.categoryId,
-          cashbackPercentage: parseFloat(newPolicy.cashbackPercentage),
-          maxCashback: newPolicy.maxCashback ? parseFloat(newPolicy.maxCashback) : null,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create policy");
-      }
-
-      if (card) {
-        setCard({
-          ...card,
-          cashbackPolicies: [...card.cashbackPolicies, data],
-        });
-      }
-      setNewPolicy({
-        categoryId: "",
-        cashbackPercentage: "",
-        maxCashback: "",
-      });
-      setShowAddPolicyDialog(false);
-    } catch (err) {
-      console.error("Error creating policy:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleDeletePolicy = async (policyId: string) => {
@@ -489,7 +430,7 @@ export default function CardDetailPage() {
                 <div className="mt-1 flex items-center space-x-2">
                   <div 
                     className="w-6 h-6 rounded-full border border-gray-200"
-                    style={{ backgroundColor: card.cardColor || '#3B82F6' }}
+                    style={{ backgroundColor: card.cardColor ?? '#3B82F6' }}
                   />
                   <button
                     onClick={() => setIsEditColorDialogOpen(true)}
@@ -513,20 +454,20 @@ export default function CardDetailPage() {
               )}
             </div>
             {card.creditLimit && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
-                  <p className="mt-1 text-lg text-gray-900">
-                    {card.creditLimit.toLocaleString()}VNĐ
-                  </p>
-                  <div className="mt-4">
-                    <CreditLimitBar
-                      creditLimit={card.creditLimit}
-                      currentSpending={card.currentSpending || 0}
-                      currentRepayment={card.currentRepayment || 0}
-                    />
-                  </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
+                <p className="mt-1 text-lg text-gray-900">
+                  {card.creditLimit.toLocaleString()}VNĐ
+                </p>
+                <div className="mt-4">
+                  <CreditLimitBar
+                    creditLimit={card.creditLimit}
+                    currentSpending={card.currentSpending ?? 0}
+                    currentRepayment={card.currentRepayment ?? 0}
+                  />
                 </div>
-              )}
+              </div>
+            )}
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Cashback Policies</h2>
@@ -701,7 +642,7 @@ export default function CardDetailPage() {
                       {format(new Date(transaction.transactionDate), "dd/MM/yyyy")}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {transaction.category?.name || "Unknown Category"}
+                      {transaction.category?.name ?? "Unknown Category"}
                     </p>
                   </div>
                   {transaction.cashbackEarned > 0 && (
@@ -774,7 +715,7 @@ export default function CardDetailPage() {
             <div className="divide-y divide-gray-100">
               {categories.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
-                  No categories found. Click "Add Category" to create one.
+                  No categories found. Click &quot;Add Category&quot; to create one.
                 </div>
               ) : (
                 categories.map((category) => {
@@ -882,7 +823,7 @@ export default function CardDetailPage() {
               type="color"
               id="cardColor"
               name="cardColor"
-              defaultValue={card?.cardColor || '#3B82F6'}
+              defaultValue={card?.cardColor ?? '#3B82F6'}
               onChange={(e) => handleUpdateCardColor(e.target.value)}
               className="w-full h-12 p-1 rounded-lg border border-gray-200 cursor-pointer"
             />

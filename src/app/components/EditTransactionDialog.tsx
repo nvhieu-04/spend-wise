@@ -75,9 +75,9 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
     if (transaction) {
       setFormData({
         amount: Math.abs(transaction.amount).toString(),
-        transactionDate: transaction.transactionDate.split("T")[0] || "",
+        transactionDate: transaction.transactionDate.split("T")[0] ?? "",
         merchantName: transaction.merchantName,
-        categoryId: String(transaction.categoryId || ""),
+        categoryId: String(transaction.categoryId ?? ""),
         type: transaction.isExpense ? "expense" : "refund",
       });
     } else {
@@ -116,7 +116,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to update transaction");
+        throw new Error(data.error ?? "Failed to update transaction");
       }
 
       onSuccess();

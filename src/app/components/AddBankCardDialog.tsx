@@ -55,7 +55,7 @@ export default function AddBankCardDialog({ isOpen, onClose, onSuccess }: AddBan
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create card");
+        throw new Error(data.error ?? "Failed to create card");
       }
 
       onSuccess();
@@ -254,7 +254,7 @@ export default function AddBankCardDialog({ isOpen, onClose, onSuccess }: AddBan
             type="number"
             id="statementClosingDate"
             name="statementClosingDate"
-            value={formData.statementClosingDate || ""}
+            value={formData.statementClosingDate ?? ""}
             onChange={handleChange}
             min="1"
             max="31"
@@ -271,7 +271,7 @@ export default function AddBankCardDialog({ isOpen, onClose, onSuccess }: AddBan
             type="number"
             id="paymentDueDate"
             name="paymentDueDate"
-            value={formData.paymentDueDate || ""}
+            value={formData.paymentDueDate ?? ""}
             onChange={handleChange}
             min="1"
             max="31"
