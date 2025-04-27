@@ -11,6 +11,7 @@ import EditTransactionDialog from "../../components/Dialog/EditTransactionDialog
 import Dialog, { DialogButton, DialogFooter } from "~/app/components/Dialog";
 import AddTransactionDialog from "~/app/components/Dialog/AddTransactionDialog";
 import CategoryDialog from "~/app/components/Dialog/CategoryDialog";
+import EditCardColorDialog from "~/app/components/Dialog/EditCardColorDialog";
 
 interface Category {
   id: string;
@@ -793,7 +794,7 @@ export default function CardDetailPage() {
         cardId={cardId}
         onSuccess={() => {
           setIsAddPolicyDialogOpen(false);
-          fetchCardDetails(); // Refresh the card details to show the new policy
+          fetchCardDetails();
         }}
       />
 
@@ -808,36 +809,12 @@ export default function CardDetailPage() {
         cardId={cardId}
       />
 
-      <Dialog
+      <EditCardColorDialog
         isOpen={isEditColorDialogOpen}
         onClose={() => setIsEditColorDialogOpen(false)}
-        title="Edit Card Color"
-        description="Choose a new color for your card."
-      >
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="cardColor" className="block text-sm font-medium text-gray-700 mb-1">
-              Card Color
-            </label>
-            <input
-              type="color"
-              id="cardColor"
-              name="cardColor"
-              defaultValue={card?.cardColor ?? '#3B82F6'}
-              onChange={(e) => handleUpdateCardColor(e.target.value)}
-              className="w-full h-12 p-1 rounded-lg border border-gray-200 cursor-pointer"
-            />
-          </div>
-          <DialogFooter>
-            <DialogButton
-              variant="secondary"
-              onClick={() => setIsEditColorDialogOpen(false)}
-            >
-              Cancel
-            </DialogButton>
-          </DialogFooter>
-        </div>
-      </Dialog>
+        cardColor={card.cardColor ?? "#3B82F6"}
+        handleUpdateCardColor={handleUpdateCardColor}
+      />
     </div>
   );
 } 
