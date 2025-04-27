@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Dialog, { DialogButton, DialogFooter } from "./Dialog";
-import { formatNumberWithDots, parseNumberFromFormatted } from "../../lib/utils";
+import { formatNumberWithDots, parseNumberFromFormatted } from "~/lib/utils";
+import DialogComponent, { DialogButton, DialogFooter } from "../Dialog";
 
 interface Category {
   id: string;
@@ -93,7 +93,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to create transaction");
+        throw new Error(data.error ?? "Failed to create transaction");
       }
 
       onSuccess();
@@ -148,7 +148,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
   const cashbackInfo = calculateCashback();
 
   return (
-    <Dialog
+    <DialogComponent
       isOpen={isOpen}
       onClose={onClose}
       title="Add New Transaction"
@@ -276,7 +276,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
           </DialogButton>
         </DialogFooter>
       </form>
-    </Dialog>
+    </DialogComponent>
   );
 };
 

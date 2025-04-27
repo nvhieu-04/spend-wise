@@ -3,14 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import CreditLimitBar from "~/components/CreditLimitBar";
-import AddTransactionDialog from "../../components/AddTransactionDialog";
-import CategoryDialog from "../../components/CategoryDialog";
 import { format } from "date-fns";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { formatNumberWithDots } from "~/lib/utils";
-import CashbackPolicyDialog from "~/app/components/CashbackPolicyDialog";
-import EditTransactionDialog from "../../components/EditTransactionDialog";
+import CashbackPolicyDialog from "~/app/components/Dialog/CashbackPolicyDialog";
+import EditTransactionDialog from "../../components/Dialog/EditTransactionDialog";
 import Dialog, { DialogButton, DialogFooter } from "~/app/components/Dialog";
+import AddTransactionDialog from "~/app/components/Dialog/AddTransactionDialog";
+import CategoryDialog from "~/app/components/Dialog/CategoryDialog";
 
 interface Category {
   id: string;

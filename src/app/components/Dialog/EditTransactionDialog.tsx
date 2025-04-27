@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Dialog, { DialogButton, DialogFooter } from "./Dialog";
-import { formatNumberWithDots, parseNumberFromFormatted } from "../../lib/utils";
+import Dialog, { DialogButton, DialogFooter } from "../Dialog";
+import { formatNumberWithDots, parseNumberFromFormatted } from "../../../lib/utils";
 
 interface Category {
   id: string;

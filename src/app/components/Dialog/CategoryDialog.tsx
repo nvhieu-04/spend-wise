@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Dialog, { DialogButton, DialogFooter } from "./Dialog";
+import Dialog, { DialogButton, DialogFooter } from "../Dialog";
 
 interface Category {
   id: string;
@@ -25,8 +25,8 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: category?.name || "",
-    description: category?.description || "",
+    name: category?.name ?? "",
+    description: category?.description ?? "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to save category");
+        throw new Error(data.error ?? "Failed to save category");
       }
 
       onSuccess();

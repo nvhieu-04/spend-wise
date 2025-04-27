@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import BankCard from "./components/BankCard";
-import AddBankCardDialog from "./components/AddBankCardDialog";
+import AddBankCardDialog from "./components/Dialog/AddBankCardDialog";
 import { useSession } from "next-auth/react";
 import PaymentNotification from './components/PaymentNotification';
 

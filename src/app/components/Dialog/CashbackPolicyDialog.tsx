@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Dialog, { DialogButton, DialogFooter } from "./Dialog";
-import { formatNumberWithDots } from "../../lib/utils";
+import { formatNumberWithDots } from "../../../lib/utils";
+import DialogComponent, { DialogButton, DialogFooter } from "../Dialog";
 
 interface Category {
   id: string;
@@ -71,7 +71,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create policy");
+        throw new Error(data.error ?? "Failed to create policy");
       }
 
       onSuccess();
@@ -102,7 +102,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   };
 
   return (
-    <Dialog
+    <DialogComponent
       isOpen={isOpen}
       onClose={onClose}
       title="Add Cashback Policy"
@@ -196,7 +196,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
           </DialogButton>
         </DialogFooter>
       </form>
-    </Dialog>
+    </DialogComponent>
   );
 };
 
