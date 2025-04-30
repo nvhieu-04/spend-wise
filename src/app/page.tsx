@@ -19,7 +19,6 @@ interface BankCard {
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [cards, setCards] = useState<BankCard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
 
@@ -34,7 +33,7 @@ export default function HomePage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setIsLoading(false);
+      setError(null);
     }
   };
 
@@ -42,7 +41,7 @@ export default function HomePage() {
     if (status === "authenticated") {
       fetchCards();
     } else {
-      setIsLoading(false);
+      setCards([]);
     }
   }, [status]);
 

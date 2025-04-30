@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import Link from "next/link";
 import CreditLimitBar from "~/components/CreditLimitBar";
 import { format } from "date-fns";
@@ -12,6 +12,7 @@ import Dialog, { DialogButton, DialogFooter } from "~/app/components/Dialog";
 import AddTransactionDialog from "~/app/components/Dialog/AddTransactionDialog";
 import CategoryDialog from "~/app/components/Dialog/CategoryDialog";
 import EditCardColorDialog from "~/app/components/Dialog/EditCardColorDialog";
+import BankCard from "~/app/components/BankCard";
 
 interface Category {
   id: string;
@@ -85,6 +86,12 @@ export default function CardDetailPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedMonth] = useState(new Date());
   const [isEditColorDialogOpen, setIsEditColorDialogOpen] = useState(false);
+
+  const handleDeleteCard = async (id: string) => {
+    if (id) {
+      redirect("/");
+    }
+  };
 
   const fetchCardDetails = async () => {
     try {
@@ -406,26 +413,35 @@ export default function CardDetailPage() {
             ← Back to Cards
           </Link>
         </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mb-8">
+          <BankCard
+            key={card.id}
+            id={card.id}
+            cardName={card.cardName}
+            bankName={card.bankName}
+            cardType={card.cardType}
+            cardNumberLast4={card.cardNumberLast4}
+            creditLimit={card.creditLimit}
+            cardColor={card.cardColor}
+            onDelete={handleDeleteCard}
+          />
+        </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
           <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Card Name</h3>
-                <p className="mt-1 text-lg text-gray-900">{card.cardName}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Bank Name</h3>
-                <p className="mt-1 text-lg text-gray-900">{card.bankName}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Card Type</h3>
-                <p className="mt-1 text-lg text-gray-900">{card.cardType}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Card Number</h3>
-                <p className="mt-1 text-lg text-gray-900">•••• •••• •••• {card.cardNumberLast4}</p>
-              </div>
+            <div className="grid md:grid-cols-2 gap-6">
+
+              {card.statementClosingDate && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Statement Closing Date</h3>
+                  <p className="mt-1 text-lg text-gray-900">Day {card.statementClosingDate} of each month</p>
+                </div>
+              )}
+              {card.paymentDueDate && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Payment Due Date</h3>
+                  <p className="mt-1 text-lg text-gray-900">Day {card.paymentDueDate} of each month</p>
+                </div>
+              )}
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Card Color</h3>
                 <div className="mt-1 flex items-center space-x-2">
@@ -441,34 +457,25 @@ export default function CardDetailPage() {
                   </button>
                 </div>
               </div>
-              {card.statementClosingDate && (
+              {card.creditLimit && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Statement Closing Date</h3>
-                  <p className="mt-1 text-lg text-gray-900">Day {card.statementClosingDate} of each month</p>
-                </div>
-              )}
-              {card.paymentDueDate && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Payment Due Date</h3>
-                  <p className="mt-1 text-lg text-gray-900">Day {card.paymentDueDate} of each month</p>
+                  <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
+                  <p className="mt-1 text-lg text-gray-900">
+                    {card.creditLimit.toLocaleString()}VNĐ
+                  </p>
                 </div>
               )}
             </div>
             {card.creditLimit && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
-                <p className="mt-1 text-lg text-gray-900">
-                  {card.creditLimit.toLocaleString()}VNĐ
-                </p>
-                <div className="mt-4">
-                  <CreditLimitBar
-                    creditLimit={card.creditLimit}
-                    currentSpending={card.currentSpending ?? 0}
-                    currentRepayment={card.currentRepayment ?? 0}
-                  />
-                </div>
+              <div className="mt-4">
+                <CreditLimitBar
+                  creditLimit={card.creditLimit}
+                  currentSpending={card.currentSpending ?? 0}
+                  currentRepayment={card.currentRepayment ?? 0}
+                />
               </div>
             )}
+           
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Cashback Policies</h2>
