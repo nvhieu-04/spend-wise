@@ -5,7 +5,7 @@ import { prisma } from "../../../../lib/prisma";
 // GET a specific bank card
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function GET(
 
     const card = await prisma.bankCard.findFirst({
       where: {
-        id: params.id,
+        id: context.params.id,
         userId: session.user.id,
       },
       include: {
@@ -59,6 +59,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching card:", error);
+    console.error(error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
@@ -93,6 +94,7 @@ export async function PUT(
 
     return NextResponse.json(bankCard);
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: "Failed to update bank card" },
       { status: 500 },
@@ -137,6 +139,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting bank card:", error);
+    console.error(error);
     return NextResponse.json(
       { error: "Failed to delete bank card" },
       { status: 500 }
@@ -182,6 +185,7 @@ export async function PATCH(
     return NextResponse.json(updatedCard);
   } catch (error) {
     console.error("Error updating card:", error);
+    console.error(error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
