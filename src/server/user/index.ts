@@ -1,8 +1,8 @@
-import { db } from "~/server/db";
+import { prisma } from "~/server/db";
 
 export class UserService {
   static async getUserById(id: string) {
-    return await db.user.findUnique({
+    return await prisma.user.findUnique({
       where: {
         id,
       },
@@ -36,7 +36,7 @@ export class UserService {
       image?: string;
     },
   ) {
-    return await db.user.update({
+    return await prisma.user.update({
       where: {
         id,
       },
