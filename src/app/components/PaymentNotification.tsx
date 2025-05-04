@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { formatNumberWithDots } from '../../lib/utils';
 
 interface PaymentNotification {
   cardId: string;

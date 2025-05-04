@@ -4,11 +4,10 @@ import { redirect, useParams } from "next/navigation";
 import Link from "next/link";
 import CreditLimitBar from "~/components/CreditLimitBar";
 import { format } from "date-fns";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { formatNumberWithDots } from "~/lib/utils";
 import CashbackPolicyDialog from "~/app/components/Dialog/CashbackPolicyDialog";
 import EditTransactionDialog from "../../components/Dialog/EditTransactionDialog";
-import Dialog, { DialogButton, DialogFooter } from "~/app/components/Dialog";
 import AddTransactionDialog from "~/app/components/Dialog/AddTransactionDialog";
 import CategoryDialog from "~/app/components/Dialog/CategoryDialog";
 import EditCardColorDialog from "~/app/components/Dialog/EditCardColorDialog";
@@ -93,7 +92,7 @@ export default function CardDetailPage() {
     }
   };
 
-  const fetchCardDetails = async () => {
+  const fetchCardDetails = async (cardId: any) => {
     try {
       const [cardResponse, transactionsResponse] = await Promise.all([
         fetch(`/api/bank-cards/${cardId}`),
@@ -126,8 +125,8 @@ export default function CardDetailPage() {
   };
 
   useEffect(() => {
-    fetchCardDetails();
-    fetchCategories();
+    fetchCardDetails(cardId);
+    fetchCategories(cardId);
   }, [cardId]);
 
   useEffect(() => {
@@ -205,7 +204,7 @@ export default function CardDetailPage() {
     fetchTransactions();
   };
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (cardId: any) => {
     try {
       const response = await fetch(`/api/categories?cardId=${cardId}`);
       if (!response.ok) {
@@ -244,7 +243,7 @@ export default function CardDetailPage() {
       }
 
       setCategories(categories.filter((c) => c.id !== categoryId));
-      fetchCardDetails(); // Refresh card details to update cashback policies
+      fetchCardDetails(cardId); // Refresh card details to update cashback policies
     } catch (err) {
       console.error("Error deleting category:", err);
       setError(err instanceof Error ? err.message : "Failed to delete category");
@@ -254,8 +253,8 @@ export default function CardDetailPage() {
   };
 
   const handleCategoryDialogSuccess = () => {
-    fetchCategories();
-    fetchCardDetails(); // Refresh card details to update cashback policies
+    fetchCategories(cardId); // Refresh categories after adding or editing
+    fetchCardDetails(card); // Refresh card details to update cashback policies
   };
 
   const handleDeletePolicy = async (policyId: string) => {
@@ -481,8 +480,9 @@ export default function CardDetailPage() {
                 <h2 className="text-lg font-semibold text-gray-900">Cashback Policies</h2>
                 <button
                   onClick={() => setIsAddPolicyDialogOpen(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
+                  <PlusIcon className="h-5 w-5 mr-2" />
                   Add Policy
                 </button>
               </div>
@@ -491,41 +491,89 @@ export default function CardDetailPage() {
                   <p className="text-red-600 text-sm">{error}</p>
                 </div>
               )}
-              <div className="space-y-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 {card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
                   <div
                     key={policy.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    className="p-6 flex items-center justify-between"
                   >
                     <div>
                       <h3 className="text-sm font-medium text-gray-900">
                         {policy.category?.name}
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        {policy.cashbackPercentage}% cashback
-                        {policy.maxCashback && ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
+                      <p className="mt-1 text-sm text-blue-600">
+                        Cashback: {policy.cashbackPercentage}%
+                        <span className="text-gray-500">
+                          {policy.maxCashback && ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
+                        </span>
                       </p>
                     </div>
                     <button
                       onClick={() => handleDeletePolicy(policy.id)}
-                      className="p-2 text-red-600 hover:text-red-700 focus:outline-none"
+                      className="text-gray-400 hover:text-red-500 disabled:opacity-50"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
+                      <TrashIcon className="h-5 w-5" />
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+            {/* Categories Section */}
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Categories</h2>
+                <button
+                  onClick={handleAddCategory}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Add Category
+                </button>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="divide-y divide-gray-100">
+                  {categories.length === 0 ? (
+                    <div className="p-6 text-center text-gray-500">
+                  No categories found. Click &quot;Add Category&quot; to create one.
+                    </div>
+                  ) : (
+                    categories.map((category) => {
+                      return (
+                        <div
+                          key={category.id}
+                          className="p-6 flex items-center justify-between"
+                        >
+                          <div>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {category.name}
+                            </h3>
+                            {category.description && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <button
+                              onClick={() => handleEditCategory(category)}
+                              className="text-gray-400 hover:text-gray-500"
+                            >
+                              <PencilIcon className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCategory(category.id)}
+                              disabled={isDeleting}
+                              className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -544,18 +592,7 @@ export default function CardDetailPage() {
               onClick={() => setIsAddTransactionDialogOpen(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <svg
-                className="-ml-1 mr-2 h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <PlusIcon className="h-5 w-5 mr-2" />
               Add Transaction
             </button>
           </div>
@@ -707,77 +744,7 @@ export default function CardDetailPage() {
           )}
         </div>
 
-        {/* Categories Section */}
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Categories</h2>
-            <button
-              onClick={handleAddCategory}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Add Category
-            </button>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="divide-y divide-gray-100">
-              {categories.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">
-                  No categories found. Click &quot;Add Category&quot; to create one.
-                </div>
-              ) : (
-                categories.map((category) => {
-                  const policy = card?.cashbackPolicies.find(
-                    (p) => p.categoryId === category.id
-                  );
-                  return (
-                    <div
-                      key={category.id}
-                      className="p-6 flex items-center justify-between"
-                    >
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {category.name}
-                        </h3>
-                        {category.description && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            {category.description}
-                          </p>
-                        )}
-                        {policy && (
-                          <p className="mt-1 text-sm text-blue-600">
-                            Cashback: {policy.cashbackPercentage}%
-                            {policy.maxCashback && (
-                              <span className="text-gray-500">
-                                {" "}
-                                (Max: {formatNumberWithDots(policy.maxCashback)} VNĐ)
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <button
-                          onClick={() => handleEditCategory(category)}
-                          className="text-gray-400 hover:text-gray-500"
-                        >
-                          <PencilIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCategory(category.id)}
-                          disabled={isDeleting}
-                          className="text-gray-400 hover:text-red-500 disabled:opacity-50"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
       <AddTransactionDialog
@@ -801,7 +768,7 @@ export default function CardDetailPage() {
         cardId={cardId}
         onSuccess={() => {
           setIsAddPolicyDialogOpen(false);
-          fetchCardDetails();
+          fetchCardDetails(cardId);
         }}
       />
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { format } from 'date-fns';
 import { formatNumberWithDots } from '../../lib/utils';
 
 interface TransactionItemProps {
@@ -35,10 +34,10 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-sm font-medium text-gray-900">
-            {merchantName || "Unknown Merchant"}
+            {merchantName ?? "Unknown Merchant"}
           </h3>
           <p className="text-sm text-gray-500">
-            {formattedDate} • {category?.name || "Uncategorized"}
+            {formattedDate} • {category?.name ?? "No Category"}
           </p>
           {cashbackEarned > 0 && (
             <p className="text-sm text-green-600 mt-1">
