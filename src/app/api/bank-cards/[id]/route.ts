@@ -1,20 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { prisma } from "../../../../lib/prisma";
-import { type BankCard, type Transaction } from "@prisma/client";
-
-type BankCardWithTransactions = BankCard & {
-  transactions: Array<{
-    amount: number;
-    isExpense: boolean;
-  }>;
-  cashbackPolicies: Array<{
-    id: string;
-    categoryId: string;
-    cashbackPercentage: number;
-    maxCashback: number | null;
-  }>;
-};
 
 // GET a specific bank card
 export async function GET(
