@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Button, Description, Dialog, DialogBackdrop, DialogTitle } from '@headlessui/react';
-import { X } from "lucide-react";
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface DialogComponentProps {
   isOpen: boolean;
@@ -87,7 +87,7 @@ const DialogComponent: React.FC<DialogComponentProps> = ({
                         className="text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full p-1"
                         onClick={onClose}
                       >
-                        <X className="h-5 w-5" />
+                        <XMarkIcon className="h-5 w-5" />
                       </Button>
                     </div>
                     {description && (
