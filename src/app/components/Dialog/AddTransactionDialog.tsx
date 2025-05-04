@@ -18,14 +18,12 @@ interface CashbackPolicy {
 }
 
 interface AddTransactionDialogProps {
-  isOpen: boolean;
   onClose: () => void;
   cardId: string;
   onSuccess: () => void;
 }
 
 const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
-  isOpen,
   onClose,
   cardId,
   onSuccess,
@@ -66,10 +64,8 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
       }
     };
 
-    if (isOpen) {
-      fetchData();
-    }
-  }, [isOpen, cardId]);
+    fetchData();
+  }, [cardId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +145,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
 
   return (
     <DialogComponent
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       title="Add New Transaction"
       description="Enter the details of your transaction below."

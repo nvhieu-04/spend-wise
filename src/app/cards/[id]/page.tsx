@@ -747,33 +747,29 @@ export default function CardDetailPage() {
 
       </div>
 
-      <AddTransactionDialog
-        isOpen={isAddTransactionDialogOpen}
+      {isAddTransactionDialogOpen && <AddTransactionDialog
         onClose={() => setIsAddTransactionDialogOpen(false)}
         cardId={card?.id || ""}
         onSuccess={handleTransactionAdded}
-      />
+      />}
 
-      <CategoryDialog
-        isOpen={isAddCategoryDialogOpen}
+      {isAddCategoryDialogOpen && <CategoryDialog
         onClose={() => setIsAddCategoryDialogOpen(false)}
         category={selectedCategory}
         onSuccess={handleCategoryDialogSuccess}
         cardId={cardId}
-      />
+      />}
 
-      <CashbackPolicyDialog
-        isOpen={isAddPolicyDialogOpen}
+      {isAddPolicyDialogOpen && <CashbackPolicyDialog
         onClose={() => setIsAddPolicyDialogOpen(false)}
         cardId={cardId}
         onSuccess={() => {
           setIsAddPolicyDialogOpen(false);
           fetchCardDetails(cardId);
         }}
-      />
+      />}
 
-      <EditTransactionDialog
-        isOpen={isEditDialogOpen}
+      {isEditDialogOpen && <EditTransactionDialog
         onClose={() => {
           setIsEditDialogOpen(false);
           setSelectedTransaction(null);
@@ -781,14 +777,13 @@ export default function CardDetailPage() {
         transaction={selectedTransaction}
         onSuccess={fetchTransactions}
         cardId={cardId}
-      />
+      />}
 
-      <EditCardColorDialog
-        isOpen={isEditColorDialogOpen}
+      {isEditColorDialogOpen && <EditCardColorDialog
         onClose={() => setIsEditColorDialogOpen(false)}
         cardColor={card.cardColor ?? "#3B82F6"}
         handleUpdateCardColor={handleUpdateCardColor}
-      />
+      />}
     </div>
   );
 } 

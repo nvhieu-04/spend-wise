@@ -1,16 +1,15 @@
 import DialogComponent, { DialogButton, DialogFooter } from "../Dialog";
 
 interface EditCardColorDialogProps {
-  isOpen: boolean;
   onClose: () => void;
   cardColor: string;
   handleUpdateCardColor: (color: string) => void;
 }
 
-export default function EditCardColorDialog({  isOpen,  onClose, cardColor,  handleUpdateCardColor,}: EditCardColorDialogProps) {
+export default function EditCardColorDialog({ onClose, cardColor, handleUpdateCardColor,}: EditCardColorDialogProps) {
   return (
     <DialogComponent
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       title="Edit Card Color"
       description="Choose a new color for your card."

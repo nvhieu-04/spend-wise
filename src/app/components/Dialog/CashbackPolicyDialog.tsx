@@ -8,14 +8,12 @@ interface Category {
 }
 
 interface CashbackPolicyDialogProps {
-  isOpen: boolean;
   onClose: () => void;
   cardId: string;
   onSuccess: () => void;
 }
 
 const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
-  isOpen,
   onClose,
   cardId,
   onSuccess,
@@ -44,10 +42,8 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
       }
     };
 
-    if (isOpen) {
-      fetchCategories();
-    }
-  }, [isOpen, cardId]);
+    fetchCategories();
+  }, [cardId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +99,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
 
   return (
     <DialogComponent
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       title="Add Cashback Policy"
       description="Set up a new cashback policy for this card."

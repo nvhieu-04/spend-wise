@@ -19,7 +19,6 @@ interface Transaction {
 }
 
 interface EditTransactionDialogProps {
-  isOpen: boolean;
   onClose: () => void;
   transaction: Transaction | null;
   onSuccess: () => void;
@@ -35,7 +34,6 @@ interface FormData {
 }
 
 const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
-  isOpen,
   onClose,
   transaction,
   onSuccess,
@@ -66,10 +64,8 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
       }
     };
 
-    if (isOpen) {
-      fetchCategories();
-    }
-  }, [isOpen, cardId]);
+    fetchCategories();
+  }, [cardId]);
 
   useEffect(() => {
     if (transaction) {
@@ -150,7 +146,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
 
   return (
     <Dialog
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       title="Edit Transaction"
       description="Update the details of your transaction below."

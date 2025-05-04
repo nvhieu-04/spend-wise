@@ -8,7 +8,6 @@ interface Category {
 }
 
 interface CategoryDialogProps {
-  isOpen: boolean;
   onClose: () => void;
   category?: Category;
   onSuccess: () => void;
@@ -16,7 +15,6 @@ interface CategoryDialogProps {
 }
 
 const CategoryDialog: React.FC<CategoryDialogProps> = ({
-  isOpen,
   onClose,
   category,
   onSuccess,
@@ -76,7 +74,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
 
   return (
     <Dialog
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       title={category ? "Edit Category" : "Add New Category"}
       description={category ? "Update the category details below." : "Enter the details of your new category below."}
