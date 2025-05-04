@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import Dialog, { DialogButton, DialogFooter } from './Dialog';
 import Link from 'next/link';
 import { formatNumberWithDots } from '../../lib/utils';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import DeleteBankCardDialog from './Dialog/DeleteBankCardDialog';
 
 interface BankCardProps {
   id: string;
@@ -24,7 +25,6 @@ const BankCard: React.FC<BankCardProps> = ({
   cardColor,
   onDelete,
 }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const getCardBackgroundColor = (type: string, color?: string) => {
@@ -42,34 +42,6 @@ const BankCard: React.FC<BankCardProps> = ({
         return 'bg-gradient-to-br from-green-500 to-green-600';
       default:
         return 'bg-gradient-to-br from-gray-500 to-gray-600';
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/bank-cards/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete card');
-      }
-
-      onDelete?.(id);
-      // Instead of reloading the page, fetch new notifications
-      const notificationResponse = await fetch('/api/notifications');
-      if (notificationResponse.ok) {
-        const notifications = await notificationResponse.json();
-        // Dispatch a custom event to update notifications
-        window.dispatchEvent(new CustomEvent('notifications-updated', { detail: notifications }));
-      }
-    } catch (error) {
-      console.error('Error deleting card:', error);
-      alert('Failed to delete card. Please try again.');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
     }
   };
 
@@ -144,48 +116,24 @@ const BankCard: React.FC<BankCardProps> = ({
                   e.preventDefault();
                   setShowDeleteDialog(true);
                 }}
-                disabled={isDeleting}
                 className="p-2 text-white/70 hover:text-red-400 transition-colors duration-200 disabled:opacity-50 hover:bg-white/10 rounded-full"
                 title="Delete card"
               >
-                {isDeleting ? (
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                )}
+                <TrashIcon className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
       </Link>
-
-      <Dialog
-        isOpen={showDeleteDialog}
+      {showDeleteDialog && <DeleteBankCardDialog
         onClose={() => setShowDeleteDialog(false)}
-        title="Delete Card"
-        description={`Are you sure you want to delete the card "${cardName}"? This action cannot be undone.`}
-      >
-        <DialogFooter>
-          <DialogButton
-            variant="secondary"
-            onClick={() => setShowDeleteDialog(false)}
-          >
-            Cancel
-          </DialogButton>
-          <DialogButton
-            variant="danger"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </DialogButton>
-        </DialogFooter>
-      </Dialog>
+        cardName={cardName}
+        cardId={id}
+        onDelete={(deletedId) => {
+          onDelete?.(deletedId);
+          setShowDeleteDialog(false);
+        }}
+      />}
     </>
   );
 };
