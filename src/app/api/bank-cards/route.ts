@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { auth } from "~/server/auth";
-import { authConfig } from "~/server/auth/config";
 
 // GET all bank cards for the current user
 export async function GET() {
@@ -113,7 +112,7 @@ export async function POST(request: Request) {
         creditLimit,
         statementClosingDate: parsedStatementClosingDate,
         paymentDueDate: parsedPaymentDueDate,
-        cardColor: cardColor || null,
+        cardColor: cardColor ?? null,
         userId: session.user.id,
       },
     });
