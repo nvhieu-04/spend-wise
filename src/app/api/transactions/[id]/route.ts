@@ -4,8 +4,7 @@ import { prisma } from "~/server/db";
 
 // GET a specific transaction
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -13,9 +12,16 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const url = new URL(request.url);
+    const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
+    if (!params) {
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+    }
+    const id = params.split("/").pop() ?? "";
+
     const transaction = await prisma.transaction.findFirst({
       where: {
-        id: params.id,
+        id: id,
         card: {
           userId: session.user.id,
         },
@@ -44,14 +50,20 @@ export async function GET(
 
 // PUT update a transaction
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const url = new URL(request.url);
+    const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
+    if (!params) {
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+    }
+    const id = params.split("/").pop() ?? "";
 
     const body = await request.json();
     const {
@@ -65,7 +77,7 @@ export async function PUT(
 
     const transaction = await prisma.transaction.update({
       where: {
-        id: params.id,
+        id: id,
         card: {
           userId: session.user.id,
         },
@@ -95,8 +107,7 @@ export async function PUT(
 
 // DELETE a transaction
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -104,9 +115,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const url = new URL(request.url);
+    const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
+    if (!params) {
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+    }
+    const id = params.split("/").pop() ?? "";
+
     await prisma.transaction.delete({
       where: {
-        id: params.id,
+        id: id,
         card: {
           userId: session.user.id,
         },

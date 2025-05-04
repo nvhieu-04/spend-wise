@@ -3,8 +3,7 @@ import { auth } from "~/server/auth";
 import { prisma } from "../../../../lib/prisma";
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -14,10 +13,12 @@ export async function DELETE(
         { status: 401 }
       );
     }
-
+    const url = new URL(request.url);
+    const params = url.searchParams;
+    const id = params.get("id") ?? "";
     const policy = await prisma.cashbackPolicy.findFirst({
       where: {
-        id: params.id,
+        id: id,
         card: {
           userId: session.user.id,
         },
@@ -33,7 +34,7 @@ export async function DELETE(
 
     await prisma.cashbackPolicy.delete({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 

@@ -3,11 +3,11 @@ import { auth } from "~/server/auth";
 import { prisma } from "../../../../../lib/prisma";
 
 export async function GET(
-  request: Request,
-  context: { params: { id: string } }
+  request: Request
 ) {
   try {
-    const { id } = await context.params;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -16,7 +16,6 @@ export async function GET(
       );
     }
 
-    const { searchParams } = new URL(request.url);
     const statementDate = searchParams.get("statementDate");
     const filterType = searchParams.get("filterType");
 
@@ -48,7 +47,7 @@ export async function GET(
 
     const transactions = await prisma.transaction.findMany({
       where: {
-        cardId: id,
+        cardId: id ?? undefined,
         card: {
           userId: session.user.id,
         },
@@ -131,11 +130,11 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
-  context: { params: { id: string } }
+  request: Request
 ) {
   try {
-    const { id } = await context.params;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -145,7 +144,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { amount, currency, transactionDate, merchantName, categoryId, type } = body;
+    const { amount, currency, transactionDate, merchantName, categoryId } = body;
 
     // Validate required fields
     if (!amount || !currency || !transactionDate) {
@@ -174,7 +173,7 @@ export async function POST(
     // Check if the card belongs to the user
     const card = await prisma.bankCard.findFirst({
       where: {
-        id: id,
+        id: id ?? undefined,
         userId: session.user.id,
       },
       include: {
@@ -227,11 +226,11 @@ export async function POST(
         currency,
         transactionDate: new Date(transactionDate),
         merchantName,
-        categoryId: categoryId || null,
-        cardId: id,
+        categoryId: categoryId ?? null,
+        cardId: id ?? undefined,
         isExpense: amount < 0, // true for expenses (negative), false for refunds (positive)
         cashbackEarned,
-      },
+      } as any,
       include: {
         category: {
           select: {

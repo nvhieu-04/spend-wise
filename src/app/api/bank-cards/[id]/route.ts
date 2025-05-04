@@ -1,21 +1,23 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { prisma } from "../../../../lib/prisma";
 
 // GET a specific bank card
-export async function GET(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); // Gets `[id]` from the path
 
+    if (!id) {
+      return new NextResponse("Card ID is required", { status: 400 });
+    }
     const card = await prisma.bankCard.findFirst({
       where: {
-        id: context.params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -37,7 +39,6 @@ export async function GET(
       return new NextResponse("Card not found", { status: 404 });
     }
 
-    // Calculate current spending and repayment using the included transactions
     const currentSpending = card.transactions
       .filter((t) => t.isExpense)
       .reduce((sum, t) => sum + t.amount, 0);
@@ -46,7 +47,6 @@ export async function GET(
       .filter((t) => !t.isExpense)
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-    // Filter out policies with deleted categories
     const validPolicies = card.cashbackPolicies.filter(
       (policy) => policy.category !== null
     );
@@ -59,15 +59,14 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching card:", error);
-    console.error(error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
 
+
 // PUT update a bank card
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -75,12 +74,15 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); // Gets `[id]` from the path
+
     const body = await request.json();
     const { cardName, cardNumberLast4, bankName, cardType, creditLimit } = body;
 
     const bankCard = await prisma.bankCard.update({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       data: {
@@ -104,8 +106,7 @@ export async function PUT(
 
 // DELETE a bank card
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -116,9 +117,12 @@ export async function DELETE(
       );
     }
 
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); // Gets `[id]` from the path
+
     const card = await prisma.bankCard.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -132,7 +136,7 @@ export async function DELETE(
 
     await prisma.bankCard.delete({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
@@ -148,8 +152,7 @@ export async function DELETE(
 }
 
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -160,10 +163,13 @@ export async function PATCH(
     const data = await request.json();
     const { cardColor } = data;
 
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); // Gets `[id]` from the path
+
     // Verify card ownership
     const card = await prisma.bankCard.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -175,7 +181,7 @@ export async function PATCH(
     // Update card color
     const updatedCard = await prisma.bankCard.update({
       where: {
-        id: params.id,
+        id: id,
       },
       data: {
         cardColor: cardColor as string,
@@ -185,7 +191,7 @@ export async function PATCH(
     return NextResponse.json(updatedCard);
   } catch (error) {
     console.error("Error updating card:", error);
-    console.error(error);
+    console.error(error); // Log the error for debugging
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

@@ -3,8 +3,7 @@ import { auth } from "~/server/auth";
 import { CashbackPolicyService } from "~/server/cashback";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: Request
 ) {
   try {
     const session = await auth();
@@ -12,8 +11,13 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+
+    const url = new URL(request.url);
+    const params = url.searchParams;
+    const id = params.get("id") ?? "";
+
     const summary = await CashbackPolicyService.getCardCashbackSummary(
-      params.id,
+      id,
       session.user.id
     );
 
