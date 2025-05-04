@@ -21,8 +21,8 @@ export async function GET(
       include: {
         cashbackPolicies: {
           include: {
-            category: true
-          }
+            category: true,
+          },
         },
         transactions: {
           select: {
@@ -47,7 +47,9 @@ export async function GET(
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     // Filter out policies with deleted categories
-    const validPolicies = card.cashbackPolicies.filter(policy => policy.category !== null);
+    const validPolicies = card.cashbackPolicies.filter(
+      (policy) => policy.category !== null
+    );
 
     return NextResponse.json({
       ...card,
@@ -182,4 +184,4 @@ export async function PATCH(
     console.error("Error updating card:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-} 
+}
