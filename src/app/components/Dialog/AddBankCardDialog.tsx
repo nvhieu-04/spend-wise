@@ -14,12 +14,11 @@ interface CardFormData {
 }
 
 interface AddBankCardDialogProps {
-  isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddBankCardDialog({ isOpen, onClose, onSuccess }: AddBankCardDialogProps) {
+export default function AddBankCardDialog({ onClose, onSuccess }: AddBankCardDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CardFormData>({
@@ -87,7 +86,7 @@ export default function AddBankCardDialog({ isOpen, onClose, onSuccess }: AddBan
 
   return (
     <Dialog
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       title="Add New Bank Card"
       description="Fill in the details to add a new bank card to your account."

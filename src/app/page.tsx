@@ -151,11 +151,10 @@ export default function HomePage() {
         </div>
       </div>
 
-      <AddBankCardDialog
-        isOpen={isAddCardDialogOpen}
+      {isAddCardDialogOpen && <AddBankCardDialog
         onClose={() => setIsAddCardDialogOpen(false)}
         onSuccess={fetchCards}
-      />
+      />}
     </div>
   );
 }
