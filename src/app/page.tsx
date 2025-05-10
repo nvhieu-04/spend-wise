@@ -5,7 +5,8 @@ import BankCard from "./components/BankCard";
 import AddBankCardDialog from "./components/Dialog/AddBankCardDialog";
 import { useSession } from "next-auth/react";
 import PaymentNotification from './components/PaymentNotification';
-
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 interface BankCard {
   id: string;
   cardName: string;
@@ -19,6 +20,7 @@ interface BankCard {
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [cards, setCards] = useState<BankCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
 
@@ -31,8 +33,10 @@ export default function HomePage() {
       const data = await response.json();
       setCards(data);
     } catch (err) {
+      setIsLoading(false);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
+      setIsLoading(false);
       setError(null);
     }
   };
@@ -52,11 +56,7 @@ export default function HomePage() {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-white text-gray-900 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-          </div>
-        </div>
+        <Skeleton count={8} />
       </div>
     );
   }
@@ -120,37 +120,37 @@ export default function HomePage() {
       <div className="min-h-screen bg-white text-gray-900 p-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">My Bank Cards</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cards.map((card) => (
-              <BankCard
-                key={card.id}
-                id={card.id}
-                cardName={card.cardName}
-                bankName={card.bankName}
-                cardType={card.cardType}
-                cardNumberLast4={card.cardNumberLast4}
-                creditLimit={card.creditLimit}
-                cardColor={card.cardColor}
-                onDelete={handleDeleteCard}
-              />
-            ))}
-            <button
-              onClick={() => setIsAddCardDialogOpen(true)}
-              className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group aspect-[1.7/1] flex flex-col items-center justify-center bg-white/50"
-            >
-              <div className="w-12 h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                <svg className="w-6 h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
+          {isLoading ? <Skeleton count={3}/> :
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cards.map((card) => (
+                <BankCard
+                  key={card.id}
+                  id={card.id}
+                  cardName={card.cardName}
+                  bankName={card.bankName}
+                  cardType={card.cardType}
+                  cardNumberLast4={card.cardNumberLast4}
+                  creditLimit={card.creditLimit}
+                  cardColor={card.cardColor}
+                  onDelete={handleDeleteCard}
+                />
+              ))}
+              <div
+                onClick={() => setIsAddCardDialogOpen(true)}
+                className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group aspect-[1.7/1]c hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center bg-white/50"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
+                  <svg className="w-6 h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">Add New Card</h3>
+                <p className="text-gray-500">Click to add another bank card</p>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Add New Card</h3>
-              <p className="text-gray-500">Click to add another bank card</p>
-            </button>
-          </div>
+            </div>
+          }
         </div>
       </div>
-
       {isAddCardDialogOpen && <AddBankCardDialog
         onClose={() => setIsAddCardDialogOpen(false)}
         onSuccess={fetchCards}
