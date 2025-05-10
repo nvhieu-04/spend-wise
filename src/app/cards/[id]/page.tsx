@@ -474,8 +474,7 @@ export default function CardDetailPage() {
                 />
               </div>
             )}
-           
-            <div className="mt-8">
+            {categories.length > 0 &&<div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Cashback Policies</h2>
                 <button
@@ -492,7 +491,11 @@ export default function CardDetailPage() {
                 </div>
               )}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                {card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
+                {card.cashbackPolicies.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">
+                    No cashback policies found. Click &quot;Add Policy&quot; to create one.
+                  </div>
+                ) : card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
                   <div
                     key={policy.id}
                     className="p-6 flex items-center justify-between"
@@ -517,7 +520,7 @@ export default function CardDetailPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
             {/* Categories Section */}
             <div className="mt-8">
               <div className="flex justify-between items-center mb-6">

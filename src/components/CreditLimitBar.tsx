@@ -14,7 +14,7 @@ const CreditLimitBar: React.FC<CreditLimitBarProps> = ({
   const spendingPercentage = (currentSpending / creditLimit) * 100;
   const repaymentPercentage = (currentRepayment / creditLimit) * 100;
   const availablePercentage = 100 - spendingPercentage - repaymentPercentage;
-  const availableCreditLimit = creditLimit - currentSpending + currentRepayment;
+  const availableCreditLimit = creditLimit + currentSpending + currentRepayment;
 
   return (
     <div className="w-full space-y-3">

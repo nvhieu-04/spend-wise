@@ -14,8 +14,7 @@ export async function DELETE(
       );
     }
     const url = new URL(request.url);
-    const params = url.searchParams;
-    const id = params.get("id") ?? "";
+    const id = url.pathname.split("/").pop();
     const policy = await prisma.cashbackPolicy.findFirst({
       where: {
         id: id,
