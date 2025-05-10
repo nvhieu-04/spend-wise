@@ -92,7 +92,7 @@ export default function CardDetailPage() {
     }
   };
 
-  const fetchCardDetails = async (cardId: any) => {
+  const fetchCardDetails = async () => {
     try {
       const [cardResponse, transactionsResponse] = await Promise.all([
         fetch(`/api/bank-cards/${cardId}`),
@@ -125,9 +125,9 @@ export default function CardDetailPage() {
   };
 
   useEffect(() => {
-    fetchCardDetails(cardId);
-    fetchCategories(cardId);
-  }, [cardId]);
+    fetchCardDetails();
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (transactions.length === 0) return;
@@ -204,7 +204,7 @@ export default function CardDetailPage() {
     fetchTransactions();
   };
 
-  const fetchCategories = async (cardId: any) => {
+  const fetchCategories = async () => {
     try {
       const response = await fetch(`/api/categories?cardId=${cardId}`);
       if (!response.ok) {
@@ -243,7 +243,7 @@ export default function CardDetailPage() {
       }
 
       setCategories(categories.filter((c) => c.id !== categoryId));
-      fetchCardDetails(cardId); // Refresh card details to update cashback policies
+      fetchCardDetails(); // Refresh card details to update cashback policies
     } catch (err) {
       console.error("Error deleting category:", err);
       setError(err instanceof Error ? err.message : "Failed to delete category");
@@ -253,8 +253,8 @@ export default function CardDetailPage() {
   };
 
   const handleCategoryDialogSuccess = () => {
-    fetchCategories(cardId); // Refresh categories after adding or editing
-    fetchCardDetails(card); // Refresh card details to update cashback policies
+    fetchCategories(); // Refresh categories after adding or editing
+    fetchCardDetails(); // Refresh card details to update cashback policies
   };
 
   const handleDeletePolicy = async (policyId: string) => {
@@ -743,13 +743,11 @@ export default function CardDetailPage() {
             ))
           )}
         </div>
-
-
       </div>
 
       {isAddTransactionDialogOpen && <AddTransactionDialog
         onClose={() => setIsAddTransactionDialogOpen(false)}
-        cardId={card?.id || ""}
+        cardId={card?.id}
         onSuccess={handleTransactionAdded}
       />}
 
@@ -765,7 +763,7 @@ export default function CardDetailPage() {
         cardId={cardId}
         onSuccess={() => {
           setIsAddPolicyDialogOpen(false);
-          fetchCardDetails(cardId);
+          fetchCardDetails();
         }}
       />}
 

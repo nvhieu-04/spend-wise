@@ -84,6 +84,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         body: JSON.stringify({
           ...formData,
           amount: finalAmount,
+          cardId
         }),
       });
 

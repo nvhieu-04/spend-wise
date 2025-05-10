@@ -133,8 +133,6 @@ export async function POST(
   request: Request
 ) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -144,7 +142,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { amount, currency, transactionDate, merchantName, categoryId } = body;
+    const { amount, currency, transactionDate, merchantName, categoryId, cardId } = body;
 
     // Validate required fields
     if (!amount || !currency || !transactionDate) {
@@ -173,7 +171,7 @@ export async function POST(
     // Check if the card belongs to the user
     const card = await prisma.bankCard.findFirst({
       where: {
-        id: id ?? undefined,
+        id: cardId ?? undefined,
         userId: session.user.id,
       },
       include: {
@@ -226,8 +224,8 @@ export async function POST(
         currency,
         transactionDate: new Date(transactionDate),
         merchantName,
-        categoryId: categoryId ?? null,
-        cardId: id ?? undefined,
+        categoryId: typeof categoryId === "string" && categoryId.trim() !== "" ? categoryId : null, // Ensure null if categoryId is empty or not provided
+        cardId: cardId ?? undefined,
         isExpense: amount < 0, // true for expenses (negative), false for refunds (positive)
         cashbackEarned,
       } as any,
@@ -248,4 +246,4 @@ export async function POST(
       { status: 500 }
     );
   }
-} 
+}
