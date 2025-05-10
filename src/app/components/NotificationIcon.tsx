@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { formatNumberWithDots } from '../../lib/utils';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 interface Notification {
   cardId: string;
@@ -87,15 +89,7 @@ export default function NotificationIcon() {
             </div>
             
             {isLoading ? (
-              <div className="space-y-3">
-                <div className="animate-pulse flex space-x-3">
-                  <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
+              <Skeleton count={3} className="h-16" />
             ) : notifications.length === 0 ? (
               <div className="text-center py-6">
                 <svg
