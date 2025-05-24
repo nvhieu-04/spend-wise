@@ -76,7 +76,7 @@ const BankCard: React.FC<BankCardProps> = ({
             background: `linear-gradient(to bottom right, ${cardColor}, ${adjustColor(cardColor, -20)})`,
           } : undefined}
         >
-          <div className="p-3 sm:p-4 md:p-6 h-full flex flex-col justify-between">
+          <div className="p-2.5 sm:p-4 md:p-5 h-full flex flex-col justify-between">
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between items-start">
                 <div className="max-w-[70%]">

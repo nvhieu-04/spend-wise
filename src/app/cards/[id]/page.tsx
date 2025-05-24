@@ -353,7 +353,7 @@ export default function CardDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white p-8">
+      <div className="min-h-screen bg-white p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
@@ -365,9 +365,9 @@ export default function CardDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white p-8">
+      <div className="min-h-screen bg-white p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12">
+          <div className="text-center py-8 sm:py-12">
             <h2 className="text-2xl font-semibold mb-4">Error Loading Card Details</h2>
             <p className="text-red-600">{error}</p>
             <Link
@@ -384,9 +384,9 @@ export default function CardDetailPage() {
 
   if (!card) {
     return (
-      <div className="min-h-screen bg-white p-8">
+      <div className="min-h-screen bg-white p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12">
+          <div className="text-center py-8 sm:py-12">
             <h2 className="text-2xl font-semibold mb-4">Card Not Found</h2>
             <Link
               href="/"
@@ -401,9 +401,9 @@ export default function CardDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex flex-col sm:flex-row items-center justify-between">
+    <div className="min-h-screen bg-white p-4 sm:p-6">
+      <div className="w-full max-w-4xl mx-auto px-0.5">
+        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Card Details</h1>
           <Link
             href="/"
@@ -412,7 +412,7 @@ export default function CardDetailPage() {
             ← Back to Cards
           </Link>
         </div>
-        <div className="w-full mb-8">
+        <div className="w-full mb-4 sm:mb-6">
           <BankCard
             key={card.id}
             id={card.id}
@@ -425,9 +425,9 @@ export default function CardDetailPage() {
             onDelete={handleDeleteCard}
           />
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4 sm:mb-6">
+          <div className="p-3 sm:p-5 space-y-3 sm:space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
 
               {card.statementClosingDate && (
                 <div>
@@ -474,7 +474,7 @@ export default function CardDetailPage() {
                 />
               </div>
             )}
-            {categories.length > 0 &&<div className="mt-6 sm:mt-8">
+            {categories.length > 0 &&<div className="mt-4 sm:mt-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Categories</h2>
                 <button
@@ -532,25 +532,25 @@ export default function CardDetailPage() {
               </div>
             </div>}
             {card.cashbackPolicies.length > 0 && (
-              <div className="mt-6 sm:mt-8">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+              <div className="mt-4 sm:mt-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4">
                   <h2 className="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Cashback Policies</h2>
                   <button
                     onClick={() => setIsAddPolicyDialogOpen(true)}
-                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     <PlusIcon className="h-5 w-5 mr-2" />
                     Add Policy
                   </button>
                 </div>
                 {error && (
-                  <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-red-600 text-xs sm:text-sm">{error}</p>
                   </div>
                 )}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                   {card.cashbackPolicies.length === 0 ? (
-                    <div className="p-4 sm:p-6 text-center text-gray-500">
+                    <div className="p-3 sm:p-4 text-center text-gray-500">
                       No cashback policies found. Click &quot;Add Policy&quot; to create one.
                     </div>
                   ) : card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
@@ -580,68 +580,10 @@ export default function CardDetailPage() {
                 </div>
               </div>
             )}
-            {/* Categories Section */}
-            <div className="mt-6 sm:mt-8">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Categories</h2>
-                <button
-                  onClick={handleAddCategory}
-                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Add Category
-                </button>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="divide-y divide-gray-100">
-                  {categories.length === 0 ? (
-                    <div className="p-4 sm:p-6 text-center text-gray-500">
-                  No categories found. Click &quot;Add Category&quot; to create one.
-                    </div>
-                  ) : (
-                    categories.map((category) => {
-                      return (
-                        <div
-                          key={category.id}
-                          className="p-4 sm:p-6 flex items-center justify-between"
-                        >
-                          <div className="flex-1 pr-4">
-                            <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                              {category.name}
-                            </h3>
-                            {category.description && (
-                              <p className="mt-1 text-xs sm:text-sm text-gray-500">
-                                {category.description}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2 sm:space-x-4">
-                            <button
-                              onClick={() => handleEditCategory(category)}
-                              className="p-2 text-gray-400 hover:text-gray-500"
-                            >
-                              <PencilIcon className="h-4 sm:h-5 w-4 sm:w-5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteCategory(category.id)}
-                              disabled={isDeleting}
-                              className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
-                            >
-                              <TrashIcon className="h-4 sm:h-5 w-4 sm:w-5" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4">
           <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Transactions</h2>
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <div className="text-left sm:text-right">
@@ -652,7 +594,7 @@ export default function CardDetailPage() {
             </div>
             <button
               onClick={() => setIsAddTransactionDialogOpen(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add Transaction
@@ -660,8 +602,8 @@ export default function CardDetailPage() {
           </div>
         </div>
 
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+        <div className="mb-4 sm:mb-5 bg-white rounded-lg shadow-sm border border-gray-100 p-2 sm:p-3">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <div className="flex items-center space-x-2">
               <input
                 type="radio"

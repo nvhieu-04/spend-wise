@@ -17,12 +17,12 @@ const CreditLimitBar: React.FC<CreditLimitBarProps> = ({
   const availableCreditLimit = creditLimit + currentSpending + currentRepayment;
 
   return (
-    <div className="w-full space-y-2 sm:space-y-3">
+    <div className="w-full space-y-1.5 sm:space-y-2.5">
       <div className="flex flex-col sm:flex-row justify-between text-xs sm:text-sm text-gray-600">
-        <span className="mb-1 sm:mb-0">Spending: {currentSpending.toLocaleString()}VNĐ</span>
+        <span className="mb-0.5 sm:mb-0">Spending: {currentSpending.toLocaleString()}VNĐ</span>
         <span>Repayment: {currentRepayment.toLocaleString()}VNĐ</span>
       </div>
-      <div className="w-full h-6 sm:h-8 bg-gray-200 rounded-lg overflow-hidden">
+      <div className="w-full h-5 sm:h-7 bg-gray-200 rounded-lg overflow-hidden">
         <div className="h-full flex">
           <div 
             className="bg-blue-500 transition-all duration-300" 
@@ -55,7 +55,7 @@ const CreditLimitBar: React.FC<CreditLimitBarProps> = ({
           <span>Available</span>
         </div>
       </div>
-      <div className="text-center text-lg font-semibold text-gray-900">
+      <div className="text-center text-base sm:text-lg font-semibold text-gray-900">
         Available Credit Limit: {availableCreditLimit.toLocaleString()}VNĐ
       </div>
     </div>
