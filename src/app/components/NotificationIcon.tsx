@@ -50,7 +50,7 @@ export default function NotificationIcon() {
   }, []);
 
   return (
-    <div className="relative">
+    <div className="relative static md:relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
@@ -77,23 +77,23 @@ export default function NotificationIcon() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Payment Reminders</h3>
+        <div className="absolute right-0 md:right-0 left-0 md:left-auto mx-2 md:mx-0 mt-3 w-auto sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+          <div className="p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Payment Reminders</h3>
               {notifications.length > 0 && (
-                <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                <span className="px-2 sm:px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                   {notifications.length} pending
                 </span>
               )}
             </div>
             
             {isLoading ? (
-              <Skeleton count={3} className="h-16" />
+              <Skeleton count={3} className="h-12 sm:h-16" />
             ) : notifications.length === 0 ? (
-              <div className="text-center py-6">
+              <div className="text-center py-4 sm:py-6">
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
+                  className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -105,19 +105,19 @@ export default function NotificationIcon() {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                <p className="mt-4 text-sm text-gray-500">No upcoming payments</p>
+                <p className="mt-3 sm:mt-4 text-sm text-gray-500">No upcoming payments</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
                 {notifications.map((notification) => (
                   <div
                     key={notification.cardId}
-                    className="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-start p-2 sm:p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <svg
-                          className="w-6 h-6 text-blue-600"
+                          className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -131,16 +131,16 @@ export default function NotificationIcon() {
                         </svg>
                       </div>
                     </div>
-                    <div className="ml-3 flex-1">
+                    <div className="ml-2 sm:ml-3 flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                           {notification.cardName}
                         </p>
-                        <span className="text-xs text-blue-600 font-medium">
+                        <span className="text-xs text-blue-600 font-medium ml-2 flex-shrink-0">
                           {notification.daysUntilPayment} days left
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-gray-600">
+                      <p className="mt-1 text-xs sm:text-sm text-gray-600 truncate">
                         Payment of {formatNumberWithDots(notification.totalSpending)} VNĐ
                       </p>
                       <p className="mt-1 text-xs text-gray-500">
