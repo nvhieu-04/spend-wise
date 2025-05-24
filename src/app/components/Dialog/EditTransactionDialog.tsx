@@ -96,6 +96,9 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
       const amount = parseNumberFromFormatted(formData.amount);
       const finalAmount = formData.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
 
+      // Convert empty categoryId to null
+      const categoryId = formData.categoryId === "" ? null : formData.categoryId;
+
       const response = await fetch(`/api/transactions/${transaction?.id}`, {
         method: "PUT",
         headers: {
@@ -105,7 +108,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
           amount: finalAmount,
           transactionDate: formData.transactionDate,
           merchantName: formData.merchantName,
-          categoryId: formData.categoryId,
+          categoryId: categoryId,
           type: formData.type,
         }),
       });
