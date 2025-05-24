@@ -47,13 +47,13 @@ export default function PaymentNotification() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-3">
+    <div className="max-w-3xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
       {notifications.map((notification) => (
-        <div key={notification.cardId} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3">
-          <div className="flex items-start space-x-3">
+        <div key={notification.cardId} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-2 sm:mb-3">
+          <div className="flex items-start space-x-2 sm:space-x-3">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-blue-500"
+                className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -66,18 +66,18 @@ export default function PaymentNotification() {
               </svg>
             </div>
             <div className="flex-1">
-              <div className="flex justify-between items-start">
-                <p className="text-sm font-medium text-gray-900">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                <p className="text-xs sm:text-sm font-medium text-gray-900">
                   Payment Reminder
                 </p>
-                <p className="text-sm text-blue-600 font-medium">
+                <p className="text-xs sm:text-sm text-blue-600 font-medium mt-0.5 sm:mt-0">
                   Due in {notification.daysUntilPayment} days
                 </p>
               </div>
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="mt-1 text-xs sm:text-sm text-gray-600">
                 {notification.message}
               </p>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-gray-500">
                 Due date: {format(new Date(notification.paymentDueDate), 'dd/MM/yyyy')}
               </p>
             </div>

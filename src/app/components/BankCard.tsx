@@ -71,17 +71,17 @@ const BankCard: React.FC<BankCardProps> = ({
     <>
       <Link href={`/cards/${id}`}>
         <div 
-          className={`${getCardBackgroundColor(cardType, cardColor)} rounded-xl overflow-hidden relative transition-all duration-300 ease-in-out aspect-auto md:aspect-[1.7/1] w-full hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer`}
+          className={`${getCardBackgroundColor(cardType, cardColor)} rounded-xl overflow-hidden relative transition-all duration-300 ease-in-out min-h-[150px] w-full hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer`}
           style={cardColor ? {
             background: `linear-gradient(to bottom right, ${cardColor}, ${adjustColor(cardColor, -20)})`,
           } : undefined}
         >
           <div className="p-3 sm:p-4 md:p-6 h-full flex flex-col justify-between">
-            <div className="space-y-2 md:space-y-4">
+            <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-white text-base sm:text-lg font-medium mb-0.5 sm:mb-1">{cardName}</h3>
-                  <p className="text-blue-100 text-xs sm:text-sm">{bankName}</p>
+                <div className="max-w-[70%]">
+                  <h3 className="text-white text-sm sm:text-base md:text-lg font-medium mb-0.5 sm:mb-1 truncate">{cardName}</h3>
+                  <p className="text-blue-100 text-xs sm:text-sm truncate">{bankName}</p>
                 </div>
                 <div className="bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-3 py-0.5 sm:py-1">
                   <span className="text-white text-xs sm:text-sm">{cardType}</span>
@@ -89,24 +89,24 @@ const BankCard: React.FC<BankCardProps> = ({
               </div>
               
               <div className="flex items-center space-x-1 sm:space-x-2">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs sm:text-sm">••••</span>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] sm:text-xs">••••</span>
                 </div>
-                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs sm:text-sm">••••</span>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] sm:text-xs">••••</span>
                 </div>
-                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs sm:text-sm">••••</span>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] sm:text-xs">••••</span>
                 </div>
-                <span className="text-white text-sm sm:text-base ml-0.5 sm:ml-1">{cardNumberLast4}</span>
+                <span className="text-white text-xs sm:text-sm md:text-base ml-0.5 sm:ml-1">{cardNumberLast4}</span>
               </div>
             </div>
 
             <div className="flex justify-between items-center mt-2 sm:mt-0">
               {creditLimit && (
-                <div>
-                  <p className="text-blue-100 text-xs sm:text-sm">Credit Limit</p>
-                  <p className="text-white text-sm sm:text-base md:text-lg font-medium">
+                <div className="max-w-full overflow-hidden">
+                  <p className="text-blue-100 text-[10px] sm:text-xs">Credit Limit</p>
+                  <p className="text-white text-xs sm:text-sm md:text-base font-medium truncate">
                     {formatNumberWithDots(creditLimit)} VNĐ
                   </p>
                 </div>

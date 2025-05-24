@@ -115,13 +115,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <PaymentNotification />
-      <div className="min-h-screen bg-white text-gray-900 p-8">
+      <div className="bg-white text-gray-900 p-3 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">My Bank Cards</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-8 text-center sm:text-left">My Bank Cards</h1>
           {isLoading ? <Skeleton count={3}/> :
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {cards.map((card) => (
                 <BankCard
                   key={card.id}
@@ -137,15 +137,15 @@ export default function HomePage() {
               ))}
               <div
                 onClick={() => setIsAddCardDialogOpen(true)}
-                className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group aspect-[1.7/1]c hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center bg-white/50"
+                className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group min-h-[150px] hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center bg-white/50 p-3 sm:p-4"
               >
-                <div className="w-12 h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                  <svg className="w-6 h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-100 transition-colors">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">Add New Card</h3>
-                <p className="text-gray-500">Click to add another bank card</p>
+                <h3 className="text-sm sm:text-base md:text-lg font-medium text-gray-900 mb-0.5 sm:mb-1 text-center">Add New Card</h3>
+                <p className="text-xs sm:text-sm text-gray-500 text-center px-1 sm:px-2 line-clamp-2">Click to add another bank card</p>
               </div>
             </div>
           }
