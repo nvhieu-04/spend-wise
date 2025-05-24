@@ -50,14 +50,14 @@ export default function NotificationIcon() {
   }, []);
 
   return (
-    <div className="relative static md:relative">
+    <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
+        className="relative p-1.5 sm:p-2 text-gray-600 hover:text-blue-600 transition-colors"
         aria-label="Notifications"
       >
         <svg
-          className="w-6 h-6"
+          className="w-5 h-5 sm:w-6 sm:h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -70,19 +70,19 @@ export default function NotificationIcon() {
           />
         </svg>
         {notifications.length > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
             {notifications.length}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 md:right-0 left-0 md:left-auto mx-2 md:mx-0 mt-3 w-auto sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div className="absolute right-0 mt-3 w-screen sm:w-80 md:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 fixed sm:fixed left-0 sm:left-auto top-14 sm:top-auto mx-0 sm:mx-auto sm:right-0">
           <div className="p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900">Payment Reminders</h3>
               {notifications.length > 0 && (
-                <span className="px-2 sm:px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                   {notifications.length} pending
                 </span>
               )}
@@ -108,7 +108,7 @@ export default function NotificationIcon() {
                 <p className="mt-3 sm:mt-4 text-sm text-gray-500">No upcoming payments</p>
               </div>
             ) : (
-              <div className="space-y-2 sm:space-y-3 max-h-80 overflow-y-auto">
+              <div className="space-y-2 sm:space-y-3 max-h-60 sm:max-h-80 overflow-y-auto">
                 {notifications.map((notification) => (
                   <div
                     key={notification.cardId}
@@ -156,4 +156,4 @@ export default function NotificationIcon() {
       )}
     </div>
   );
-} 
+}

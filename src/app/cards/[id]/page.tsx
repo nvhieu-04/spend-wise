@@ -403,8 +403,8 @@ export default function CardDetailPage() {
   return (
     <div className="min-h-screen bg-white p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Card Details</h1>
+        <div className="mb-8 flex flex-col sm:flex-row items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Card Details</h1>
           <Link
             href="/"
             className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
@@ -412,7 +412,7 @@ export default function CardDetailPage() {
             ← Back to Cards
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mb-8">
+        <div className="w-full mb-8">
           <BankCard
             key={card.id}
             id={card.id}
@@ -426,19 +426,19 @@ export default function CardDetailPage() {
           />
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-          <div className="p-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 
               {card.statementClosingDate && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Statement Closing Date</h3>
-                  <p className="mt-1 text-lg text-gray-900">Day {card.statementClosingDate} of each month</p>
+                  <p className="mt-1 text-base sm:text-lg text-gray-900">Day {card.statementClosingDate} of each month</p>
                 </div>
               )}
               {card.paymentDueDate && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Payment Due Date</h3>
-                  <p className="mt-1 text-lg text-gray-900">Day {card.paymentDueDate} of each month</p>
+                  <p className="mt-1 text-base sm:text-lg text-gray-900">Day {card.paymentDueDate} of each month</p>
                 </div>
               )}
               <div>
@@ -459,7 +459,7 @@ export default function CardDetailPage() {
               {card.creditLimit && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
-                  <p className="mt-1 text-lg text-gray-900">
+                  <p className="mt-1 text-base sm:text-lg text-gray-900">
                     {card.creditLimit.toLocaleString()}VNĐ
                   </p>
                 </div>
@@ -474,60 +474,12 @@ export default function CardDetailPage() {
                 />
               </div>
             )}
-            {categories.length > 0 &&<div className="mt-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Cashback Policies</h2>
-                <button
-                  onClick={() => setIsAddPolicyDialogOpen(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Add Policy
-                </button>
-              </div>
-              {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
-              )}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                {card.cashbackPolicies.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500">
-                    No cashback policies found. Click &quot;Add Policy&quot; to create one.
-                  </div>
-                ) : card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
-                  <div
-                    key={policy.id}
-                    className="p-6 flex items-center justify-between"
-                  >
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900">
-                        {policy.category?.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-blue-600">
-                        Cashback: {policy.cashbackPercentage}%
-                        <span className="text-gray-500">
-                          {policy.maxCashback && ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
-                        </span>
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDeletePolicy(policy.id)}
-                      className="text-gray-400 hover:text-red-500 disabled:opacity-50"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>}
-            {/* Categories Section */}
-            <div className="mt-8">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Categories</h2>
+            {categories.length > 0 &&<div className="mt-6 sm:mt-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Categories</h2>
                 <button
                   onClick={handleAddCategory}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <PlusIcon className="h-5 w-5 mr-2" />
                   Add Category
@@ -537,7 +489,7 @@ export default function CardDetailPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="divide-y divide-gray-100">
                   {categories.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500">
+                    <div className="p-4 sm:p-6 text-center text-gray-500">
                   No categories found. Click &quot;Add Category&quot; to create one.
                     </div>
                   ) : (
@@ -545,31 +497,138 @@ export default function CardDetailPage() {
                       return (
                         <div
                           key={category.id}
-                          className="p-6 flex items-center justify-between"
+                          className="p-4 sm:p-6 flex items-center justify-between"
                         >
-                          <div>
-                            <h3 className="text-lg font-medium text-gray-900">
+                          <div className="flex-1 pr-4">
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900">
                               {category.name}
                             </h3>
                             {category.description && (
-                              <p className="mt-1 text-sm text-gray-500">
+                              <p className="mt-1 text-xs sm:text-sm text-gray-500">
                                 {category.description}
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-2 sm:space-x-4">
                             <button
                               onClick={() => handleEditCategory(category)}
-                              className="text-gray-400 hover:text-gray-500"
+                              className="p-2 text-gray-400 hover:text-gray-500"
                             >
-                              <PencilIcon className="h-5 w-5" />
+                              <PencilIcon className="h-4 sm:h-5 w-4 sm:w-5" />
                             </button>
                             <button
                               onClick={() => handleDeleteCategory(category.id)}
                               disabled={isDeleting}
-                              className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                              className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
                             >
-                              <TrashIcon className="h-5 w-5" />
+                              <TrashIcon className="h-4 sm:h-5 w-4 sm:w-5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>}
+            {card.cashbackPolicies.length > 0 && (
+              <div className="mt-6 sm:mt-8">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Cashback Policies</h2>
+                  <button
+                    onClick={() => setIsAddPolicyDialogOpen(true)}
+                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    Add Policy
+                  </button>
+                </div>
+                {error && (
+                  <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-xs sm:text-sm">{error}</p>
+                  </div>
+                )}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                  {card.cashbackPolicies.length === 0 ? (
+                    <div className="p-4 sm:p-6 text-center text-gray-500">
+                      No cashback policies found. Click &quot;Add Policy&quot; to create one.
+                    </div>
+                  ) : card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
+                    <div
+                      key={policy.id}
+                      className="p-4 sm:p-6 flex items-center justify-between border-b last:border-b-0 border-gray-100"
+                    >
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {policy.category?.name}
+                        </h3>
+                        <p className="mt-1 text-xs sm:text-sm text-blue-600">
+                          Cashback: {policy.cashbackPercentage}%
+                          <span className="text-gray-500">
+                            {policy.maxCashback && ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
+                          </span>
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeletePolicy(policy.id)}
+                        className="text-gray-400 hover:text-red-500 disabled:opacity-50 p-2"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Categories Section */}
+            <div className="mt-6 sm:mt-8">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Categories</h2>
+                <button
+                  onClick={handleAddCategory}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Add Category
+                </button>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="divide-y divide-gray-100">
+                  {categories.length === 0 ? (
+                    <div className="p-4 sm:p-6 text-center text-gray-500">
+                  No categories found. Click &quot;Add Category&quot; to create one.
+                    </div>
+                  ) : (
+                    categories.map((category) => {
+                      return (
+                        <div
+                          key={category.id}
+                          className="p-4 sm:p-6 flex items-center justify-between"
+                        >
+                          <div className="flex-1 pr-4">
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+                              {category.name}
+                            </h3>
+                            {category.description && (
+                              <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2 sm:space-x-4">
+                            <button
+                              onClick={() => handleEditCategory(category)}
+                              className="p-2 text-gray-400 hover:text-gray-500"
+                            >
+                              <PencilIcon className="h-4 sm:h-5 w-4 sm:w-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCategory(category.id)}
+                              disabled={isDeleting}
+                              className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
+                            >
+                              <TrashIcon className="h-4 sm:h-5 w-4 sm:w-5" />
                             </button>
                           </div>
                         </div>
@@ -582,18 +641,18 @@ export default function CardDetailPage() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Transactions</h2>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Total Cashback</p>
-              <p className="text-lg font-semibold text-green-600">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Transactions</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="text-left sm:text-right">
+              <p className="text-xs sm:text-sm text-gray-500">Total Cashback</p>
+              <p className="text-base sm:text-lg font-semibold text-green-600">
                 {formatNumberWithDots(totalCashback)} VNĐ
               </p>
             </div>
             <button
               onClick={() => setIsAddTransactionDialogOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add Transaction
@@ -601,8 +660,8 @@ export default function CardDetailPage() {
           </div>
         </div>
 
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <div className="flex items-center space-x-4">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-2">
               <input
                 type="radio"
@@ -641,7 +700,7 @@ export default function CardDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span className="text-lg font-medium text-gray-900">
+              <span className="text-base sm:text-lg font-medium text-gray-900">
                 {format(selectedWeek, "dd/MM/yyyy")}
               </span>
               <button
@@ -655,7 +714,7 @@ export default function CardDetailPage() {
             </div>
           ) : (
             <div className="mt-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Current statement period: {format(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - (new Date().getDate() < selectedStatementDate! ? 1 : 0), selectedStatementDate!), "dd/MM/yyyy")} - {format(new Date(), "dd/MM/yyyy")}
               </p>
               <p className="text-xs text-gray-500 mt-1">
@@ -665,18 +724,18 @@ export default function CardDetailPage() {
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg">
               <p className="text-gray-500">No transactions found for the selected period</p>
             </div>
           ) : (
             filteredTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-100"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg border border-gray-100"
               >
-                <div className="flex-1">
+                <div className="flex-1 mb-2 sm:mb-0">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-gray-900">
                       {transaction.merchantName}
@@ -685,62 +744,64 @@ export default function CardDetailPage() {
                       {formatNumberWithDots(Math.abs(transaction.amount))} VNĐ
                     </p>
                   </div>
-                  <div className="mt-1 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
+                  <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {format(new Date(transaction.transactionDate), "dd/MM/yyyy")}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">
                       {transaction.category?.name ?? "Unknown Category"}
                     </p>
                   </div>
                   {transaction.cashbackEarned > 0 && (
                     <div className="mt-1">
-                      <p className="text-sm text-green-600">
+                      <p className="text-xs sm:text-sm text-green-600">
                         Cashback: {formatNumberWithDots(transaction.cashbackEarned)} VNĐ
                       </p>
                     </div>
                   )}
                 </div>
-                <div className="ml-4 flex items-center space-x-2">
-                  <button
-                    onClick={() => {
-                      setSelectedTransaction(transaction);
-                      setIsEditDialogOpen(true);
-                    }}
-                    className="p-2 text-gray-400 hover:text-gray-500"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                <div className="flex justify-end sm:ml-4 sm:flex-shrink-0">
+                  <div className="flex items-center space-x-1 sm:space-x-2">
+                    <button
+                      onClick={() => {
+                        setSelectedTransaction(transaction);
+                        setIsEditDialogOpen(true);
+                      }}
+                      className="p-2 text-gray-400 hover:text-gray-500"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTransaction(transaction.id)}
-                    className="p-2 text-red-400 hover:text-red-500"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                      <svg
+                        className="w-4 sm:w-5 h-4 sm:h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTransaction(transaction.id)}
+                      className="p-2 text-red-400 hover:text-red-500"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-4 sm:w-5 h-4 sm:h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -787,4 +848,4 @@ export default function CardDetailPage() {
       />}
     </div>
   );
-} 
+}

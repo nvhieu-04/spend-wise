@@ -71,7 +71,7 @@ const BankCard: React.FC<BankCardProps> = ({
     <>
       <Link href={`/cards/${id}`}>
         <div 
-          className={`${getCardBackgroundColor(cardType, cardColor)} rounded-xl overflow-hidden relative transition-all duration-300 ease-in-out min-h-[150px] w-full hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer`}
+          className={`${getCardBackgroundColor(cardType, cardColor)} rounded-xl overflow-hidden relative transition-all duration-300 ease-in-out min-h-[140px] sm:min-h-[150px] w-full hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer`}
           style={cardColor ? {
             background: `linear-gradient(to bottom right, ${cardColor}, ${adjustColor(cardColor, -20)})`,
           } : undefined}
@@ -90,13 +90,13 @@ const BankCard: React.FC<BankCardProps> = ({
               
               <div className="flex items-center space-x-1 sm:space-x-2">
                 <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] sm:text-xs">••••</span>
+                  <span className="text-white text-[8px] sm:text-[10px]">••••</span>
                 </div>
                 <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] sm:text-xs">••••</span>
+                  <span className="text-white text-[8px] sm:text-[10px]">••••</span>
                 </div>
                 <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] sm:text-xs">••••</span>
+                  <span className="text-white text-[8px] sm:text-[10px]">••••</span>
                 </div>
                 <span className="text-white text-xs sm:text-sm md:text-base ml-0.5 sm:ml-1">{cardNumberLast4}</span>
               </div>
@@ -138,4 +138,4 @@ const BankCard: React.FC<BankCardProps> = ({
   );
 };
 
-export default BankCard; 
+export default BankCard;
