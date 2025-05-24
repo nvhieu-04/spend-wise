@@ -403,27 +403,37 @@ export default function CardDetailPage() {
   return (
     <div className="min-h-screen bg-white p-4 sm:p-6">
       <div className="w-full max-w-4xl mx-auto px-0.5">
-        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Card Details</h1>
+        {/* Back button positioned at top left */}
+        <div className="mb-4">
           <Link
             href="/"
-            className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors"
           >
-            ← Back to Cards
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Cards
           </Link>
         </div>
-        <div className="w-full mb-4 sm:mb-6">
-          <BankCard
-            key={card.id}
-            id={card.id}
-            cardName={card.cardName}
-            bankName={card.bankName}
-            cardType={card.cardType}
-            cardNumberLast4={card.cardNumberLast4}
-            creditLimit={card.creditLimit}
-            cardColor={card.cardColor}
-            onDelete={handleDeleteCard}
-          />
+        
+        {/* Page header */}
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Card Details</h1>
+        </div>
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <div className="w-full max-w-sm">
+            <BankCard
+              key={card.id}
+              id={card.id}
+              cardName={card.cardName}
+              bankName={card.bankName}
+              cardType={card.cardType}
+              cardNumberLast4={card.cardNumberLast4}
+              creditLimit={card.creditLimit}
+              cardColor={card.cardColor}
+              onDelete={handleDeleteCard}
+            />
+          </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4 sm:mb-6">
           <div className="p-3 sm:p-5 space-y-3 sm:space-y-5">

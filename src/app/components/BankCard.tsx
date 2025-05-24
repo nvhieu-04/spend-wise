@@ -71,42 +71,42 @@ const BankCard: React.FC<BankCardProps> = ({
     <>
       <Link href={`/cards/${id}`}>
         <div 
-          className={`${getCardBackgroundColor(cardType, cardColor)} rounded-xl overflow-hidden relative transition-all duration-300 ease-in-out min-h-[140px] sm:min-h-[150px] w-full hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer`}
+          className={`${getCardBackgroundColor(cardType, cardColor)} rounded-xl overflow-hidden relative transition-all duration-300 ease-in-out w-full aspect-[1.6/1] hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer`}
           style={cardColor ? {
             background: `linear-gradient(to bottom right, ${cardColor}, ${adjustColor(cardColor, -20)})`,
           } : undefined}
         >
-          <div className="p-2.5 sm:p-4 md:p-5 h-full flex flex-col justify-between">
-            <div className="space-y-2 md:space-y-3">
+          <div className="p-3 sm:p-4 md:p-6 h-full flex flex-col justify-between">
+            <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
               <div className="flex justify-between items-start">
                 <div className="max-w-[70%]">
-                  <h3 className="text-white text-sm sm:text-base md:text-lg font-medium mb-0.5 sm:mb-1 truncate">{cardName}</h3>
-                  <p className="text-blue-100 text-xs sm:text-sm truncate">{bankName}</p>
+                  <h3 className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-0.5 truncate">{cardName}</h3>
+                  <p className="text-blue-100 text-[10px] sm:text-xs md:text-sm truncate">{bankName}</p>
                 </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-3 py-0.5 sm:py-1">
-                  <span className="text-white text-xs sm:text-sm">{cardType}</span>
+                <div className="bg-white/20 backdrop-blur-sm rounded-full px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1">
+                  <span className="text-white text-[10px] sm:text-xs md:text-sm">{cardType}</span>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-1 sm:space-x-2">
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-[8px] sm:text-[10px]">••••</span>
+              <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-white text-[6px] sm:text-[8px] md:text-[10px]">••••</span>
                 </div>
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-[8px] sm:text-[10px]">••••</span>
+                <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-white text-[6px] sm:text-[8px] md:text-[10px]">••••</span>
                 </div>
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <span className="text-white text-[8px] sm:text-[10px]">••••</span>
+                <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-white text-[6px] sm:text-[8px] md:text-[10px]">••••</span>
                 </div>
-                <span className="text-white text-xs sm:text-sm md:text-base ml-0.5 sm:ml-1">{cardNumberLast4}</span>
+                <span className="text-white text-[10px] sm:text-xs md:text-sm lg:text-base ml-0.5 sm:ml-1">{cardNumberLast4}</span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center mt-2 sm:mt-0">
+            <div className="flex justify-between items-center">
               {creditLimit && (
-                <div className="max-w-full overflow-hidden">
-                  <p className="text-blue-100 text-[10px] sm:text-xs">Credit Limit</p>
-                  <p className="text-white text-xs sm:text-sm md:text-base font-medium truncate">
+                <div className="max-w-[60%] overflow-hidden">
+                  <p className="text-blue-100 text-[8px] sm:text-[10px] md:text-xs">Credit Limit</p>
+                  <p className="text-white text-[10px] sm:text-xs md:text-sm lg:text-base font-medium truncate">
                     {formatNumberWithDots(creditLimit)} VNĐ
                   </p>
                 </div>
@@ -116,10 +116,10 @@ const BankCard: React.FC<BankCardProps> = ({
                   e.preventDefault();
                   setShowDeleteDialog(true);
                 }}
-                className="p-1.5 sm:p-2 text-white/70 hover:text-red-400 transition-colors duration-200 disabled:opacity-50 hover:bg-white/10 rounded-full"
+                className="p-1 sm:p-1.5 md:p-2 text-white/70 hover:text-red-400 transition-colors duration-200 disabled:opacity-50 hover:bg-white/10 rounded-full"
                 title="Delete card"
               >
-                <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               </button>
             </div>
           </div>

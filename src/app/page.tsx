@@ -121,7 +121,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-8 text-center sm:text-left">My Bank Cards</h1>
           {isLoading ? <Skeleton count={3}/> :
-            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {cards.map((card) => (
                 <BankCard
                   key={card.id}
@@ -137,7 +137,7 @@ export default function HomePage() {
               ))}
               <div
                 onClick={() => setIsAddCardDialogOpen(true)}
-                className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group min-h-[120px] sm:min-h-[150px] hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center bg-white/50 p-3 sm:p-4"
+                className="border-2 border-dashed border-blue-200 rounded-xl relative transition-all duration-300 ease-in-out hover:border-blue-300 group aspect-[1.6/1] hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center bg-white/50 p-3 sm:p-4"
               >
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100/50 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-100 transition-colors">
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
