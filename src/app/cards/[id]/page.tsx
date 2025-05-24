@@ -484,7 +484,7 @@ export default function CardDetailPage() {
                 />
               </div>
             )}
-            {categories.length > 0 &&<div className="mt-4 sm:mt-6">
+            <div className="mt-4 sm:mt-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Categories</h2>
                 <button
@@ -540,8 +540,8 @@ export default function CardDetailPage() {
                   )}
                 </div>
               </div>
-            </div>}
-            {card.cashbackPolicies.length > 0 && (
+            </div>
+            {categories.length > 0 && (
               <div className="mt-4 sm:mt-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4">
                   <h2 className="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Cashback Policies</h2>
