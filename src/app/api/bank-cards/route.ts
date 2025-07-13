@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { auth } from "~/server/auth";
 
-// GET all bank cards for the current user
-export async function GET() {
+// GET all bank cards for the current user (with pagination)
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -12,23 +12,34 @@ export async function GET() {
         { status: 401 }
       );
     }
-
-    const cards = await prisma.bankCard.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      select: {
-        id: true,
-        cardName: true,
-        bankName: true,
-        cardType: true,
-        cardNumberLast4: true,
-        creditLimit: true,
-        cardColor: true,
-      },
-    });
-
-    return NextResponse.json(cards);
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") ?? "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") ?? "10", 10);
+    const skip = (page - 1) * pageSize;
+    const [cards, total] = await Promise.all([
+      prisma.bankCard.findMany({
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
+          cardName: true,
+          bankName: true,
+          cardType: true,
+          cardNumberLast4: true,
+          creditLimit: true,
+          cardColor: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.bankCard.count({
+        where: {
+          userId: session.user.id,
+        },
+      })
+    ]);
+    return NextResponse.json({ cards, total, page, pageSize });
   } catch (error) {
     console.error("Error fetching bank cards:", error);
     return NextResponse.json(
@@ -125,4 +136,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
