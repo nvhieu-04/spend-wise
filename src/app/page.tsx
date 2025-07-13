@@ -31,7 +31,7 @@ export default function HomePage() {
         throw new Error("Failed to fetch cards");
       }
       const data = await response.json();
-      setCards(data);
+      setCards(data.cards);
     } catch (err) {
       setIsLoading(false);
       setError(err instanceof Error ? err.message : "An error occurred");
