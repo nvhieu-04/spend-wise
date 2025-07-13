@@ -2,18 +2,31 @@ import { prisma } from "~/server/db";
 import { type CashbackPolicy } from "@prisma/client";
 
 export class CashbackPolicyService {
-  static async getUserPolicies(userId: string) {
-    return await prisma.cashbackPolicy.findMany({
-      where: {
-        card: {
-          userId,
+  static async getUserPolicies(userId: string, page = 1, pageSize = 10) {
+    const skip = (page - 1) * pageSize;
+    const [policies, total] = await Promise.all([
+      prisma.cashbackPolicy.findMany({
+        where: {
+          card: {
+            userId,
+          },
         },
-      },
-      include: {
-        card: true,
-        category: true,
-      },
-    });
+        include: {
+          card: true,
+          category: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.cashbackPolicy.count({
+        where: {
+          card: {
+            userId,
+          },
+        },
+      }),
+    ]);
+    return { policies, total, page, pageSize };
   }
 
   static async getPolicyById(id: string, userId: string) {
@@ -31,12 +44,15 @@ export class CashbackPolicyService {
     });
   }
 
-  static async createPolicy(data: {
-    cardId: string;
-    categoryId: string;
-    cashbackPercentage: number;
-    maxCashback?: number;
-  }, userId: string) {
+  static async createPolicy(
+    data: {
+      cardId: string;
+      categoryId: string;
+      cashbackPercentage: number;
+      maxCashback?: number;
+    },
+    userId: string,
+  ) {
     // Verify card ownership
     const card = await prisma.bankCard.findFirst({
       where: {
@@ -130,10 +146,10 @@ export class CashbackPolicyService {
     let maxCashback = 0;
     for (const policy of policies) {
       const cashback = (amount * policy.cashbackPercentage) / 100;
-      const finalCashback = policy.maxCashback 
+      const finalCashback = policy.maxCashback
         ? Math.min(cashback, policy.maxCashback)
         : cashback;
-      
+
       maxCashback = Math.max(maxCashback, finalCashback);
     }
 
@@ -182,4 +198,4 @@ export class CashbackPolicyService {
       transactions,
     };
   }
-} 
+}

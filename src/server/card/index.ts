@@ -2,15 +2,26 @@ import { prisma } from "~/server/db";
 import { type BankCard } from "@prisma/client";
 
 export class BankCardService {
-  static async getUserCards(userId: string) {
-    return await prisma.bankCard.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        cashbackPolicies: true,
-      },
-    });
+  static async getUserCards(userId: string, page = 1, pageSize = 10) {
+    const skip = (page - 1) * pageSize;
+    const [cards, total] = await Promise.all([
+      prisma.bankCard.findMany({
+        where: {
+          userId,
+        },
+        include: {
+          cashbackPolicies: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.bankCard.count({
+        where: {
+          userId,
+        },
+      }),
+    ]);
+    return { cards, total, page, pageSize };
   }
 
   static async getCardById(id: string, userId: string) {
