@@ -1,8 +1,9 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
 
+import path from "path";
 const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
+  baseDirectory: path.resolve(__dirname),
 });
 
 export default tseslint.config(
@@ -18,14 +19,14 @@ export default tseslint.config(
       ...tseslint.configs.stylisticTypeChecked,
     ],
     rules: {
-      "@typescript-eslint/no-floating-promises": 'off',
+      "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/array-type": "off",
       "@typescript-eslint/consistent-type-definitions": "off",
-      "react-hooks/exhaustive-deps": 'off',
+      "react-hooks/exhaustive-deps": "off",
       "@typescript-eslint/consistent-type-imports": [
         "warn",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
