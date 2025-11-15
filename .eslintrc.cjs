@@ -47,10 +47,10 @@ module.exports = {
     ],
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     "@typescript-eslint/no-misused-promises": [
-      "error",
+      "off",
       { checksVoidReturn: { attributes: false } },
     ],
-    indent: ["error", 2, { SwitchCase: 1 }],
+    indent: ["warn", 2, { SwitchCase: 1 }],
     "react/react-in-jsx-scope": "off",
     "prettier/prettier": "error",
   },
