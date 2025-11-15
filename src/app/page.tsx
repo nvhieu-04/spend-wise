@@ -1,12 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import BankCard from "./components/BankCard";
-import AddBankCardDialog from "./components/Dialog/AddBankCardDialog";
 import { useSession } from "next-auth/react";
-import PaymentNotification from "./components/PaymentNotification";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import BankCard from "./components/BankCard";
+import AddBankCardDialog from "./components/Dialog/AddBankCardDialog";
+import PaymentNotification from "./components/PaymentNotification";
 interface BankCard {
   id: string;
   cardName: string;
@@ -152,7 +152,7 @@ export default function HomePage() {
                   onDelete={handleDeleteCard}
                 />
               ))}
-              <div
+              <button
                 onClick={() => setIsAddCardDialogOpen(true)}
                 className="group relative flex aspect-[1.6/1] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-200 bg-white/50 p-3 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:scale-105 hover:border-blue-300 hover:shadow-xl sm:p-4"
               >
@@ -177,7 +177,7 @@ export default function HomePage() {
                 <p className="line-clamp-2 px-1 text-center text-xs text-gray-500 sm:px-2 sm:text-sm">
                   Click to add another bank card
                 </p>
-              </div>
+              </button>
             </div>
           )}
         </div>

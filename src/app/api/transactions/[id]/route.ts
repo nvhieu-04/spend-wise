@@ -43,7 +43,12 @@ export async function GET(request: Request) {
     return NextResponse.json(transaction);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch transaction" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch transaction",
+      },
       { status: 500 },
     );
   }
@@ -103,7 +108,12 @@ export async function PUT(request: Request) {
     return NextResponse.json(transaction);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to update transaction" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to update transaction",
+      },
       { status: 500 },
     );
   }
@@ -121,7 +131,7 @@ export async function DELETE(request: Request) {
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
       return NextResponse.json(
-        { error: "Category ID is required" },
+        { error: "Transaction ID is required" },
         { status: 400 },
       );
     }
@@ -139,7 +149,12 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Transaction deleted successfully" });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to delete transaction" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete transaction",
+      },
       { status: 500 },
     );
   }

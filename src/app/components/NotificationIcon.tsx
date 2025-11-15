@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { formatNumberWithDots } from "../../lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { FiBell, FiCheckCircle, FiChevronRight } from "react-icons/fi";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { FiBell, FiCheckCircle, FiChevronRight } from "react-icons/fi";
+import { formatNumberWithDots } from "../../lib/utils";
 
 interface Notification {
   cardId: string;
@@ -181,31 +181,6 @@ export default function NotificationIcon() {
           </div>
         </div>
       )}
-      <style jsx global>{`
-        @keyframes shake {
-          0% {
-            transform: translateX(0);
-          }
-          20% {
-            transform: translateX(-2px);
-          }
-          40% {
-            transform: translateX(2px);
-          }
-          60% {
-            transform: translateX(-2px);
-          }
-          80% {
-            transform: translateX(2px);
-          }
-          100% {
-            transform: translateX(0);
-          }
-        }
-        .animate-shake {
-          animation: shake 0.4s;
-        }
-      `}</style>
     </div>
   );
 }

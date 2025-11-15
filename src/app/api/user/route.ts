@@ -12,7 +12,10 @@ export async function GET() {
     const user = await UserService.getUserById(session.user.id);
     return Response.json(user);
   } catch (error) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response(
+      error instanceof Error ? error.message : "Internal Server Error",
+      { status: 500 },
+    );
   }
 }
 
@@ -28,6 +31,9 @@ export async function PUT(request: Request) {
 
     return Response.json(user);
   } catch (error) {
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response(
+      error instanceof Error ? error.message : "Internal Server Error",
+      { status: 500 },
+    );
   }
 }
