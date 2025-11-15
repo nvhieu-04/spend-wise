@@ -1,6 +1,12 @@
 import React, { useState } from "react";
+import {
+  formatNumberWithDots,
+  parseNumberFromFormatted,
+} from "../../../lib/utils";
+import BankCard from "../BankCard";
 import Dialog, { DialogButton, DialogFooter } from "../Dialog";
-import { formatNumberWithDots, parseNumberFromFormatted } from "../../../lib/utils";
+import ListBox from "../ListBox";
+import TextField from "../TextField";
 
 interface CardFormData {
   cardName: string;
@@ -18,9 +24,13 @@ interface AddBankCardDialogProps {
   onSuccess: () => void;
 }
 
-export default function AddBankCardDialog({ onClose, onSuccess }: AddBankCardDialogProps) {
+export default function AddBankCardDialog({
+  onClose,
+  onSuccess,
+}: AddBankCardDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<CardFormData>({
     cardName: "",
     bankName: "",
@@ -33,11 +43,49 @@ export default function AddBankCardDialog({ onClose, onSuccess }: AddBankCardDia
   });
   const [showCustomCardType, setShowCustomCardType] = useState(false);
 
+  // validation errors per field
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  const validateStep = (s: number) => {
+    const errors: Record<string, string> = {};
+    if (s === 1) {
+      if (!formData.cardName.trim()) errors.cardName = "Card name is required";
+      if (!formData.bankName.trim()) errors.bankName = "Bank name is required";
+      // if custom type selected, cardType must be provided
+      if (showCustomCardType) {
+        if (!formData.cardType.trim())
+          errors.cardType = "Custom card type is required";
+      } else {
+        if (!formData.cardType.trim())
+          errors.cardType = "Card type is required";
+      }
+    } else if (s === 2) {
+      const digitsOnly = formData.cardNumber.replace(/[^\d]/g, "");
+      if (!digitsOnly || digitsOnly.length !== 4)
+        errors.cardNumber = "Enter exactly 4 digits";
+      if (formData.creditLimit) {
+        const creditNum = parseNumberFromFormatted(formData.creditLimit);
+        if (isNaN(creditNum) || creditNum < 0)
+          errors.creditLimit = "Invalid credit limit";
+      }
+      const validateDay = (v?: number) => v !== undefined && (v < 1 || v > 31);
+      if (validateDay(formData.statementClosingDate))
+        errors.statementClosingDate = "Must be between 1 and 31";
+      if (validateDay(formData.paymentDueDate))
+        errors.paymentDueDate = "Must be between 1 and 31";
+    }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // ensure server-side won't be called if step 2 validation fails
+    if (!validateStep(2)) return;
     setIsSubmitting(true);
     setError(null);
-
     try {
       const response = await fetch("/api/bank-cards", {
         method: "POST",
@@ -47,16 +95,15 @@ export default function AddBankCardDialog({ onClose, onSuccess }: AddBankCardDia
         body: JSON.stringify({
           ...formData,
           cardNumberLast4: formData.cardNumber.slice(-4),
-          creditLimit: formData.creditLimit ? parseNumberFromFormatted(formData.creditLimit) : undefined,
+          creditLimit: formData.creditLimit
+            ? parseNumberFromFormatted(formData.creditLimit)
+            : undefined,
         }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error ?? "Failed to create card");
       }
-
       onSuccess();
       onClose();
     } catch (error) {
@@ -65,23 +112,6 @@ export default function AddBankCardDialog({ onClose, onSuccess }: AddBankCardDia
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleCreditLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d]/g, '');
-    const formattedValue = formatNumberWithDots(value);
-    setFormData(prev => ({
-      ...prev,
-      creditLimit: formattedValue
-    }));
   };
 
   return (
@@ -93,208 +123,283 @@ export default function AddBankCardDialog({ onClose, onSuccess }: AddBankCardDia
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
+        <div className="flex w-full flex-row justify-around gap-3 space-y-6">
+          <div className="flex w-full max-w-md flex-1 flex-col space-y-4">
+            {step === 1 && (
+              <div>
+                <TextField
+                  label="Card Name"
+                  name="cardName"
+                  placeholder="e.g. My Travel Card"
+                  value={formData.cardName}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, cardName: value }));
+                    setValidationErrors((prev) => ({ ...prev, cardName: "" }));
+                  }}
+                />
+                {validationErrors.cardName && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.cardName}
+                  </p>
+                )}
+                <TextField
+                  label="Bank Name"
+                  name="bankName"
+                  placeholder="e.g. Chase Bank"
+                  value={formData.bankName}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, bankName: value }));
+                    setValidationErrors((prev) => ({ ...prev, bankName: "" }));
+                  }}
+                />
+                {validationErrors.bankName && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.bankName}
+                  </p>
+                )}
+                <ListBox
+                  label="Card Type"
+                  value={showCustomCardType ? "CUSTOM" : formData.cardType}
+                  listItems={["VISA", "MASTERCARD", "AMEX", "CUSTOM"]}
+                  onChange={(value) => {
+                    if (value === "CUSTOM") {
+                      setShowCustomCardType(true);
+                      setFormData((prev) => ({ ...prev, cardType: "" }));
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        cardType: "",
+                      }));
+                    } else {
+                      setShowCustomCardType(false);
+                      setFormData((prev) => ({ ...prev, cardType: value }));
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        cardType: "",
+                      }));
+                    }
+                  }}
+                />
+                {showCustomCardType && (
+                  <TextField
+                    label="Custom Card Type"
+                    name="cardType"
+                    placeholder="Enter custom card type"
+                    value={formData.cardType}
+                    onChange={(value) => {
+                      setFormData((prev) => ({ ...prev, cardType: value }));
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        cardType: "",
+                      }));
+                    }}
+                  />
+                )}
+                {validationErrors.cardType && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.cardType}
+                  </p>
+                )}
+                <div className="mt-4 flex items-center space-x-4">
+                  <TextField
+                    label="Card Color"
+                    name="cardColor"
+                    value={formData.cardColor}
+                    onChange={(value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        cardColor: value,
+                      }));
+                    }}
+                    placeholder="#RRGGBB"
+                  />
+                  <input
+                    type="color"
+                    id="cardColor"
+                    name="cardColor"
+                    value={formData.cardColor}
+                    onChange={(e) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        cardColor: e.target.value,
+                      }));
+                    }}
+                    className="mt-6 h-12 w-20 cursor-pointer rounded-lg border border-gray-200"
+                  />
+                </div>
+              </div>
+            )}
+            {step === 2 && (
+              <div>
+                <TextField
+                  label="Card Number (Last 4 digits)"
+                  name="cardNumber"
+                  placeholder="Enter last 4 digits"
+                  value={formData.cardNumber}
+                  onChange={(value) => {
+                    const sanitizedValue = value
+                      .replace(/[^\d]/g, "")
+                      .slice(0, 4);
+                    setFormData((prev) => ({
+                      ...prev,
+                      cardNumber: sanitizedValue,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      cardNumber: "",
+                    }));
+                  }}
+                />
+                {validationErrors.cardNumber && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.cardNumber}
+                  </p>
+                )}
 
-        <div>
-          <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
-            Card Name
-          </label>
-          <input
-            type="text"
-            id="cardName"
-            name="cardName"
-            value={formData.cardName}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            placeholder="e.g. My Travel Card"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">
-            Bank Name
-          </label>
-          <input
-            type="text"
-            id="bankName"
-            name="bankName"
-            value={formData.bankName}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            placeholder="e.g. Chase Bank"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="cardType" className="block text-sm font-medium text-gray-700 mb-1">
-            Card Type
-          </label>
-          <div className="space-y-2">
-            <select
-              id="cardType"
-              name="cardType"
-              value={showCustomCardType ? "CUSTOM" : formData.cardType}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === "CUSTOM") {
-                  setShowCustomCardType(true);
-                  setFormData(prev => ({ ...prev, cardType: "" }));
-                } else {
-                  setShowCustomCardType(false);
-                  setFormData(prev => ({ ...prev, cardType: value }));
-                }
-              }}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-white"
-            >
-              <option value="VISA">VISA</option>
-              <option value="MASTERCARD">Mastercard</option>
-              <option value="AMEX">American Express</option>
-              <option value="CUSTOM">Other (Custom)</option>
-            </select>
-            {showCustomCardType && (
-              <input
-                type="text"
-                name="cardType"
-                value={formData.cardType}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                placeholder="Enter custom card type"
-              />
+                <TextField
+                  label="Credit Limit (Optional)"
+                  name="creditLimit"
+                  placeholder="Enter credit limit amount"
+                  value={formData.creditLimit}
+                  onChange={(value) => {
+                    const formattedValue = formatNumberWithDots(
+                      value.replace(/[^\d]/g, ""),
+                    );
+                    setFormData((prev) => ({
+                      ...prev,
+                      creditLimit: formattedValue,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      creditLimit: "",
+                    }));
+                  }}
+                  className="mb-4"
+                />
+                {validationErrors.creditLimit && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.creditLimit}
+                  </p>
+                )}
+                <TextField
+                  label="Statement Closing Date (Optional)"
+                  name="statementClosingDate"
+                  placeholder="Day of month (1-31)"
+                  value={
+                    formData.statementClosingDate
+                      ? formData.statementClosingDate.toString()
+                      : ""
+                  }
+                  onChange={(value) => {
+                    const numericValue = parseInt(value.replace(/[^\d]/g, ""));
+                    setFormData((prev) => ({
+                      ...prev,
+                      statementClosingDate: isNaN(numericValue)
+                        ? undefined
+                        : numericValue,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      statementClosingDate: "",
+                    }));
+                  }}
+                />
+                {validationErrors.statementClosingDate && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.statementClosingDate}
+                  </p>
+                )}
+                <TextField
+                  label="Payment Due Date (Optional)"
+                  name="paymentDueDate"
+                  placeholder="Day of month (1-31)"
+                  value={
+                    formData.paymentDueDate
+                      ? formData.paymentDueDate.toString()
+                      : ""
+                  }
+                  onChange={(value) => {
+                    const numericValue = parseInt(value.replace(/[^\d]/g, ""));
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentDueDate: isNaN(numericValue)
+                        ? undefined
+                        : numericValue,
+                    }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      paymentDueDate: "",
+                    }));
+                  }}
+                />
+                {validationErrors.paymentDueDate && (
+                  <p className="text-sm text-red-600">
+                    {validationErrors.paymentDueDate}
+                  </p>
+                )}
+              </div>
             )}
           </div>
-        </div>
-
-        <div>
-          <label htmlFor="cardColor" className="block text-sm font-medium text-gray-700 mb-1">
-            Card Color
-          </label>
-          <div className="flex items-center space-x-4">
-            <input
-              type="color"
-              id="cardColor"
-              name="cardColor"
-              value={formData.cardColor}
-              onChange={(e) => {
-                setFormData(prev => ({
-                  ...prev,
-                  cardColor: e.target.value
-                }));
-              }}
-              className="h-10 w-20 rounded-lg border border-gray-200 cursor-pointer"
-            />
-            <input
-              type="text"
-              value={formData.cardColor}
-              onChange={(e) => {
-                setFormData(prev => ({
-                  ...prev,
-                  cardColor: e.target.value
-                }));
-              }}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-              placeholder="#RRGGBB"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
-            Card Number (Last 4 digits)
-          </label>
-          <input
-            type="text"
-            id="cardNumber"
-            name="cardNumber"
-            value={formData.cardNumber}
-            onChange={(e) => {
-              const value = e.target.value.replace(/[^\d]/g, '').slice(0, 4);
-              setFormData(prev => ({ ...prev, cardNumber: value }));
-            }}
-            required
-            pattern="[0-9]{4}"
-            maxLength={4}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            placeholder="Enter last 4 digits"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="creditLimit" className="block text-sm font-medium text-gray-700 mb-1">
-            Credit Limit (Optional)
-          </label>
-          <div className="relative rounded-md shadow-sm">
-            <input
-              type="text"
-              id="creditLimit"
-              name="creditLimit"
-              value={formData.creditLimit}
-              onChange={handleCreditLimitChange}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-              placeholder="Enter credit limit amount"
-            />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">VNĐ</span>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="statementClosingDate" className="block text-sm font-medium text-gray-700 mb-1">
-            Statement Closing Date (Optional)
-          </label>
-          <input
-            type="number"
-            id="statementClosingDate"
-            name="statementClosingDate"
-            value={formData.statementClosingDate ?? ""}
-            onChange={handleChange}
-            min="1"
-            max="31"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            placeholder="Day of month (1-31)"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="paymentDueDate" className="block text-sm font-medium text-gray-700 mb-1">
-            Payment Due Date (Optional)
-          </label>
-          <input
-            type="number"
-            id="paymentDueDate"
-            name="paymentDueDate"
-            value={formData.paymentDueDate ?? ""}
-            onChange={handleChange}
-            min="1"
-            max="31"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-            placeholder="Day of month (1-31)"
+          <BankCard
+            isAdd={true}
+            className="w-full max-w-sm"
+            cardName={formData.cardName || "Card Name"}
+            bankName={formData.bankName || "Bank Name"}
+            cardType={formData.cardType || "VISA"}
+            cardNumberLast4={formData.cardNumber.slice(-4) || "0000"}
+            creditLimit={
+              formData.creditLimit
+                ? parseNumberFromFormatted(formData.creditLimit)
+                : undefined
+            }
+            cardColor={formData.cardColor}
           />
         </div>
 
         <DialogFooter>
           <DialogButton
             variant="secondary"
-            onClick={onClose}
+            onClick={() => {
+              if (step === 1) {
+                onClose();
+              } else {
+                setStep((prev) => prev - 1);
+                // clear step2 errors when going back
+                setValidationErrors({});
+              }
+            }}
             disabled={isSubmitting}
           >
-            Cancel
+            {step === 1 ? "Cancel" : "Back"}
           </DialogButton>
           <DialogButton
-            type="submit"
+            type="button"
+            onClick={() => {
+              if (step === 1) {
+                if (validateStep(1)) {
+                  setStep(2);
+                  setValidationErrors({});
+                }
+              } else {
+                // validate step 2 before submitting
+                if (validateStep(2)) {
+                  handleSubmit(
+                    new Event("submit") as unknown as React.FormEvent,
+                  );
+                }
+              }
+            }}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Adding..." : "Add Card"}
+            {step === 1 && !isSubmitting && "Next"}
+            {step === 2 && !isSubmitting && "Add Card"}
+            {isSubmitting && "Submitting..."}
           </DialogButton>
         </DialogFooter>
       </form>
     </Dialog>
   );
-} 
+}
