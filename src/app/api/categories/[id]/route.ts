@@ -3,9 +3,7 @@ import { auth } from "~/server/auth";
 import { CategoryService } from "~/server/category";
 
 // GET a specific category
-export async function GET(
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -15,7 +13,10 @@ export async function GET(
     const url = new URL(request.url);
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
     }
     const id = params.split("/").pop() ?? "";
 
@@ -29,15 +30,13 @@ export async function GET(
     }
     return NextResponse.json(
       { error: "Failed to fetch category" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 // PUT update a category
-export async function PUT(
-  request: Request
-) {
+export async function PUT(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -47,7 +46,10 @@ export async function PUT(
     const url = new URL(request.url);
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
     }
     const id = params.split("/").pop() ?? "";
 
@@ -66,15 +68,13 @@ export async function PUT(
     }
     return NextResponse.json(
       { error: "Failed to update category" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 // DELETE a category
-export async function DELETE(
-  request: Request
-) {
+export async function DELETE(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -84,7 +84,10 @@ export async function DELETE(
     const url = new URL(request.url);
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
     }
     const id = params.split("/").pop() ?? "";
 
@@ -95,13 +98,16 @@ export async function DELETE(
       if (error.message === "Category not found") {
         return NextResponse.json({ error: error.message }, { status: 404 });
       }
-      if (error.message === "Cannot delete category that is being used in transactions or cashback policies") {
+      if (
+        error.message ===
+        "Cannot delete category that is being used in transactions or cashback policies"
+      ) {
         return NextResponse.json({ error: error.message }, { status: 400 });
       }
     }
     return NextResponse.json(
       { error: "Failed to delete category" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

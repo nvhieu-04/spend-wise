@@ -6,7 +6,11 @@ interface EditCardColorDialogProps {
   handleUpdateCardColor: (color: string) => void;
 }
 
-export default function EditCardColorDialog({ onClose, cardColor, handleUpdateCardColor,}: EditCardColorDialogProps) {
+export default function EditCardColorDialog({
+  onClose,
+  cardColor,
+  handleUpdateCardColor,
+}: EditCardColorDialogProps) {
   return (
     <DialogComponent
       isOpen={true}
@@ -16,8 +20,11 @@ export default function EditCardColorDialog({ onClose, cardColor, handleUpdateCa
     >
       <div className="space-y-4">
         <div>
-          <label htmlFor="cardColor" className="block text-sm font-medium text-gray-700 mb-1">
-              Card Color
+          <label
+            htmlFor="cardColor"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
+            Card Color
           </label>
           <input
             type="color"
@@ -25,19 +32,15 @@ export default function EditCardColorDialog({ onClose, cardColor, handleUpdateCa
             name="cardColor"
             defaultValue={cardColor}
             onChange={(e) => handleUpdateCardColor(e.target.value)}
-            className="w-full h-12 p-1 rounded-lg border border-gray-200 cursor-pointer"
+            className="h-12 w-full cursor-pointer rounded-lg border border-gray-200 p-1"
           />
         </div>
         <DialogFooter>
-          <DialogButton
-            variant="secondary"
-            onClick={onClose}
-          >
-              Cancel
+          <DialogButton variant="secondary" onClick={onClose}>
+            Cancel
           </DialogButton>
         </DialogFooter>
       </div>
     </DialogComponent>
   );
-};
-
+}

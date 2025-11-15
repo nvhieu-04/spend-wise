@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';
+import React, { useEffect, useState } from "react";
+import { format } from "date-fns";
 
 interface PaymentNotification {
   cardId: string;
@@ -17,13 +17,13 @@ export default function PaymentNotification() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('/api/notifications');
+        const response = await fetch("/api/notifications");
         if (response.ok) {
           const data = await response.json();
           setNotifications(data);
         }
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        console.error("Error fetching notifications:", error);
       }
     };
 
@@ -35,10 +35,16 @@ export default function PaymentNotification() {
       setNotifications(event.detail);
     };
 
-    window.addEventListener('notifications-updated', handleNotificationUpdate as EventListener);
+    window.addEventListener(
+      "notifications-updated",
+      handleNotificationUpdate as EventListener,
+    );
 
     return () => {
-      window.removeEventListener('notifications-updated', handleNotificationUpdate as EventListener);
+      window.removeEventListener(
+        "notifications-updated",
+        handleNotificationUpdate as EventListener,
+      );
     };
   }, []);
 
@@ -47,13 +53,16 @@ export default function PaymentNotification() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
+    <div className="mx-auto max-w-3xl px-2 py-2 sm:px-4 sm:py-3">
       {notifications.map((notification) => (
-        <div key={notification.cardId} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-2 sm:mb-3">
+        <div
+          key={notification.cardId}
+          className="mb-2 rounded-lg border border-gray-200 bg-white p-3 shadow-sm sm:mb-3 sm:p-4"
+        >
           <div className="flex items-start space-x-2 sm:space-x-3">
             <div className="flex-shrink-0">
               <svg
-                className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500"
+                className="h-4 w-4 text-blue-500 sm:h-5 sm:w-5"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -66,19 +75,20 @@ export default function PaymentNotification() {
               </svg>
             </div>
             <div className="flex-1">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                <p className="text-xs sm:text-sm font-medium text-gray-900">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                <p className="text-xs font-medium text-gray-900 sm:text-sm">
                   Payment Reminder
                 </p>
-                <p className="text-xs sm:text-sm text-blue-600 font-medium mt-0.5 sm:mt-0">
+                <p className="mt-0.5 text-xs font-medium text-blue-600 sm:mt-0 sm:text-sm">
                   Due in {notification.daysUntilPayment} days
                 </p>
               </div>
-              <p className="mt-1 text-xs sm:text-sm text-gray-600">
+              <p className="mt-1 text-xs text-gray-600 sm:text-sm">
                 {notification.message}
               </p>
-              <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-gray-500">
-                Due date: {format(new Date(notification.paymentDueDate), 'dd/MM/yyyy')}
+              <p className="mt-1 text-[10px] text-gray-500 sm:mt-2 sm:text-xs">
+                Due date:{" "}
+                {format(new Date(notification.paymentDueDate), "dd/MM/yyyy")}
               </p>
             </div>
           </div>
@@ -86,4 +96,4 @@ export default function PaymentNotification() {
       ))}
     </div>
   );
-} 
+}

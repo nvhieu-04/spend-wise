@@ -3,9 +3,7 @@ import { auth } from "~/server/auth";
 import { prisma } from "~/server/db";
 
 // GET a specific transaction
-export async function GET(
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -15,7 +13,10 @@ export async function GET(
     const url = new URL(request.url);
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
     }
     const id = params.split("/").pop() ?? "";
 
@@ -49,9 +50,7 @@ export async function GET(
 }
 
 // PUT update a transaction
-export async function PUT(
-  request: Request
-) {
+export async function PUT(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -61,7 +60,10 @@ export async function PUT(
     const url = new URL(request.url);
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
     }
     const id = params.split("/").pop() ?? "";
 
@@ -85,7 +87,9 @@ export async function PUT(
       data: {
         amount,
         currency,
-        transactionDate: transactionDate ? new Date(transactionDate) : undefined,
+        transactionDate: transactionDate
+          ? new Date(transactionDate)
+          : undefined,
         merchantName,
         categoryId,
         cashbackEarned,
@@ -106,9 +110,7 @@ export async function PUT(
 }
 
 // DELETE a transaction
-export async function DELETE(
-  request: Request
-) {
+export async function DELETE(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -118,7 +120,10 @@ export async function DELETE(
     const url = new URL(request.url);
     const params = url.pathname.split("/").pop(); // Gets `[id]` from the path
     if (!params) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 },
+      );
     }
     const id = params.split("/").pop() ?? "";
 
@@ -138,4 +143,4 @@ export async function DELETE(
       { status: 500 },
     );
   }
-} 
+}

@@ -60,7 +60,9 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
           cardId,
           categoryId: formData.categoryId,
           cashbackPercentage: parseFloat(formData.cashbackPercentage),
-          maxCashback: formData.maxCashback ? parseInt(formData.maxCashback.replace(/\./g, '')) : null,
+          maxCashback: formData.maxCashback
+            ? parseInt(formData.maxCashback.replace(/\./g, ""))
+            : null,
         }),
       });
 
@@ -80,7 +82,9 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -89,11 +93,11 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   };
 
   const handleMaxCashbackChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d]/g, '');
+    const value = e.target.value.replace(/[^\d]/g, "");
     const formattedValue = formatNumberWithDots(value);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      maxCashback: formattedValue
+      maxCashback: formattedValue,
     }));
   };
 
@@ -106,13 +110,16 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
         <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="categoryId"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Category
           </label>
           <select
@@ -121,7 +128,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             value={formData.categoryId}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-white"
+            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             <option value="">Select a category</option>
             {categories.map((category) => (
@@ -133,7 +140,10 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
         </div>
 
         <div>
-          <label htmlFor="cashbackPercentage" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="cashbackPercentage"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Cashback Percentage
           </label>
           <div className="relative rounded-md shadow-sm">
@@ -147,17 +157,20 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
               min="0"
               max="100"
               step="0.1"
-              className="block w-full pl-7 pr-12 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              className="block w-full rounded-lg border border-gray-200 py-2 pr-12 pl-7 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="0"
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
               <span className="text-gray-500 sm:text-sm">%</span>
             </div>
           </div>
         </div>
 
         <div>
-          <label htmlFor="maxCashback" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="maxCashback"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Maximum Cashback (Optional)
           </label>
           <div className="relative rounded-md shadow-sm">
@@ -167,10 +180,10 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
               id="maxCashback"
               value={formData.maxCashback}
               onChange={handleMaxCashbackChange}
-              className="block w-full pl-7 pr-12 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              className="block w-full rounded-lg border border-gray-200 py-2 pr-12 pl-7 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="0"
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
               <span className="text-gray-500 sm:text-sm">VNĐ</span>
             </div>
           </div>
@@ -184,10 +197,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
           >
             Cancel
           </DialogButton>
-          <DialogButton
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <DialogButton type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Adding..." : "Add Policy"}
           </DialogButton>
         </DialogFooter>
@@ -196,4 +206,4 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   );
 };
 
-export default CashbackPolicyDialog; 
+export default CashbackPolicyDialog;

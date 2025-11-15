@@ -2,18 +2,13 @@ import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { prisma } from "../../../../../lib/prisma";
 
-export async function GET(
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const statementDate = searchParams.get("statementDate");
@@ -41,7 +36,9 @@ export async function GET(
 
       // Ensure we don't filter out any transactions
       if (startDate && endDate) {
-        console.log(`Statement period: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+        console.log(
+          `Statement period: ${startDate.toISOString()} to ${endDate.toISOString()}`,
+        );
       }
     }
 
@@ -51,12 +48,13 @@ export async function GET(
         card: {
           userId: session.user.id,
         },
-        ...(startDate && endDate && {
-          transactionDate: {
-            gte: startDate,
-            lte: endDate,
-          },
-        }),
+        ...(startDate &&
+          endDate && {
+            transactionDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
       },
       include: {
         category: {
@@ -80,7 +78,7 @@ export async function GET(
     });
 
     // Calculate cashback for each transaction
-    const transactionsWithCashback = transactions.map(transaction => {
+    const transactionsWithCashback = transactions.map((transaction) => {
       if (!transaction.categoryId) {
         return {
           ...transaction,
@@ -89,7 +87,7 @@ export async function GET(
       }
 
       const policy = transaction.card.cashbackPolicies.find(
-        p => p.categoryId === transaction.categoryId
+        (p) => p.categoryId === transaction.categoryId,
       );
 
       if (!policy) {
@@ -99,8 +97,9 @@ export async function GET(
         };
       }
 
-      const cashbackAmount = (Math.abs(transaction.amount) * policy.cashbackPercentage) / 100;
-      const finalCashback = policy.maxCashback 
+      const cashbackAmount =
+        (Math.abs(transaction.amount) * policy.cashbackPercentage) / 100;
+      const finalCashback = policy.maxCashback
         ? Math.min(cashbackAmount, policy.maxCashback)
         : cashbackAmount;
 
@@ -113,7 +112,7 @@ export async function GET(
     // Calculate total cashback
     const totalCashback = transactionsWithCashback.reduce(
       (sum, transaction) => sum + (transaction.cashbackEarned || 0),
-      0
+      0,
     );
 
     return NextResponse.json({
@@ -124,47 +123,46 @@ export async function GET(
     console.error("Error fetching transactions:", error);
     return NextResponse.json(
       { error: "Failed to fetch transactions" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function POST(
-  request: Request
-) {
+export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { amount, currency, transactionDate, merchantName, categoryId, cardId } = body;
+    const {
+      amount,
+      currency,
+      transactionDate,
+      merchantName,
+      categoryId,
+      cardId,
+    } = body;
 
     // Validate required fields
     if (!amount || !currency || !transactionDate) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate amount is a number
     if (typeof amount !== "number" || isNaN(amount)) {
-      return NextResponse.json(
-        { error: "Invalid amount" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
     // Validate amount is not zero
     if (amount === 0) {
       return NextResponse.json(
         { error: "Amount cannot be zero" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -184,10 +182,7 @@ export async function POST(
     });
 
     if (!card) {
-      return NextResponse.json(
-        { error: "Card not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
     // If categoryId is provided, verify it exists
@@ -195,11 +190,11 @@ export async function POST(
       const category = await prisma.category.findUnique({
         where: { id: categoryId },
       });
-      
+
       if (!category) {
         return NextResponse.json(
           { error: "Category not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -207,10 +202,13 @@ export async function POST(
     // Calculate cashback if it's an expense and has a category
     let cashbackEarned = 0;
     if (categoryId) {
-      const policy = card.cashbackPolicies.find(p => p.categoryId === categoryId);
+      const policy = card.cashbackPolicies.find(
+        (p) => p.categoryId === categoryId,
+      );
       if (policy) {
-        const cashbackAmount = (Math.abs(amount) * policy.cashbackPercentage) / 100;
-        const finalCashback = policy.maxCashback 
+        const cashbackAmount =
+          (Math.abs(amount) * policy.cashbackPercentage) / 100;
+        const finalCashback = policy.maxCashback
           ? Math.min(cashbackAmount, policy.maxCashback)
           : cashbackAmount;
         cashbackEarned = amount < 0 ? finalCashback : -finalCashback;
@@ -224,7 +222,10 @@ export async function POST(
         currency,
         transactionDate: new Date(transactionDate),
         merchantName,
-        categoryId: typeof categoryId === "string" && categoryId.trim() !== "" ? categoryId : null, // Ensure null if categoryId is empty or not provided
+        categoryId:
+          typeof categoryId === "string" && categoryId.trim() !== ""
+            ? categoryId
+            : null, // Ensure null if categoryId is empty or not provided
         cardId: cardId ?? undefined,
         isExpense: amount < 0, // true for expenses (negative), false for refunds (positive)
         cashbackEarned,
@@ -243,7 +244,7 @@ export async function POST(
     console.error("Error creating transaction:", error);
     return NextResponse.json(
       { error: "Failed to create transaction" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

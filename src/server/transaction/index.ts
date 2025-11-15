@@ -58,7 +58,7 @@ export class TransactionService {
       categoryId?: string;
       cashbackEarned?: number;
     },
-    userId: string
+    userId: string,
   ) {
     // Verify card ownership
     const card = await prisma.bankCard.findFirst({
@@ -78,7 +78,7 @@ export class TransactionService {
       cashbackEarned = await CashbackPolicyService.calculateCashback(
         data.cardId,
         data.categoryId,
-        data.amount
+        data.amount,
       );
     }
 
@@ -97,7 +97,7 @@ export class TransactionService {
   static async updateTransaction(
     id: string,
     userId: string,
-    data: Partial<Omit<Transaction, "id" | "cardId" | "createdAt">>
+    data: Partial<Omit<Transaction, "id" | "cardId" | "createdAt">>,
   ) {
     return await prisma.transaction.update({
       where: {

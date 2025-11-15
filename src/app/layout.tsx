@@ -9,7 +9,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "SpendWise - Manage Your Bank Cards",
-  description: "Track your credit cards, monitor spending, and maximize your rewards in one place.",
+  description:
+    "Track your credit cards, monitor spending, and maximize your rewards in one place.",
   icons: {
     icon: "/logo.png",
   },
@@ -23,14 +24,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+        />
       </head>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${inter.className} flex min-h-screen flex-col`}>
         <AuthProvider>
           <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
+          <main className="flex-grow">{children}</main>
           <Footer />
         </AuthProvider>
       </body>

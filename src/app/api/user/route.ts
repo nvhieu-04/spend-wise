@@ -30,4 +30,4 @@ export async function PUT(request: Request) {
   } catch (error) {
     return new Response("Internal Server Error", { status: 500 });
   }
-} 
+}

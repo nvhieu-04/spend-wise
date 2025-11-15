@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     const validPolicies = card.cashbackPolicies.filter(
-      (policy) => policy.category !== null
+      (policy) => policy.category !== null,
     );
 
     return NextResponse.json({
@@ -63,11 +63,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-
 // PUT update a bank card
-export async function PUT(
-  request: Request
-) {
+export async function PUT(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -105,16 +102,11 @@ export async function PUT(
 }
 
 // DELETE a bank card
-export async function DELETE(
-  request: Request
-) {
+export async function DELETE(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const url = new URL(request.url);
@@ -128,10 +120,7 @@ export async function DELETE(
     });
 
     if (!card) {
-      return NextResponse.json(
-        { error: "Card not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
     await prisma.bankCard.delete({
@@ -146,14 +135,12 @@ export async function DELETE(
     console.error(error);
     return NextResponse.json(
       { error: "Failed to delete bank card" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function PATCH(
-  request: Request
-) {
+export async function PATCH(request: Request) {
   try {
     const session = await auth();
     if (!session?.user) {

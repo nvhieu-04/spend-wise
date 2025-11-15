@@ -104,8 +104,13 @@ export class CategoryService {
       throw new Error("Category not found");
     }
 
-    if (category.transactions.length > 0 || category.cashbackPolicies.length > 0) {
-      throw new Error("Cannot delete category that is being used in transactions or cashback policies");
+    if (
+      category.transactions.length > 0 ||
+      category.cashbackPolicies.length > 0
+    ) {
+      throw new Error(
+        "Cannot delete category that is being used in transactions or cashback policies",
+      );
     }
 
     return await prisma.category.delete({
@@ -114,4 +119,4 @@ export class CategoryService {
       },
     });
   }
-} 
+}

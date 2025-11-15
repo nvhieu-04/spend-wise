@@ -16,15 +16,22 @@ export class StatisticsService {
         },
       },
     });
-    const totalSpending = allTransactions.filter((t) => t.isExpense).reduce((sum, t) => sum + t.amount, 0);
-    const totalCashback = allTransactions.reduce((sum, t) => sum + (t.cashbackEarned ?? 0), 0);
+    const totalSpending = allTransactions
+      .filter((t) => t.isExpense)
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalCashback = allTransactions.reduce(
+      (sum, t) => sum + (t.cashbackEarned ?? 0),
+      0,
+    );
     // Số lượng giao dịch theo tháng
     const transactionsByMonth: Record<string, number> = {};
     for (let m = 0; m < 12; m++) {
       transactionsByMonth[(m + 1).toString().padStart(2, "0")] = 0;
     }
     allTransactions.forEach((t) => {
-      const month = (new Date(t.transactionDate).getMonth() + 1).toString().padStart(2, "0");
+      const month = (new Date(t.transactionDate).getMonth() + 1)
+        .toString()
+        .padStart(2, "0");
       if (transactionsByMonth[month] !== undefined) {
         transactionsByMonth[month]++;
       }

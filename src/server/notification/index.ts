@@ -1,4 +1,4 @@
-import { prisma } from '~/lib/prisma';
+import { prisma } from "~/lib/prisma";
 
 export class NotificationService {
   static async getUpcomingPaymentNotifications(userId: string) {
@@ -12,8 +12,8 @@ export class NotificationService {
       where: {
         userId,
         paymentDueDate: {
-          not: null
-        }
+          not: null,
+        },
       },
       include: {
         transactions: {
@@ -21,11 +21,11 @@ export class NotificationService {
             isExpense: true,
             transactionDate: {
               gte: new Date(currentYear, currentMonth - 1, 1), // Last month
-              lt: new Date(currentYear, currentMonth, 1) // Current month
-            }
-          }
-        }
-      }
+              lt: new Date(currentYear, currentMonth, 1), // Current month
+            },
+          },
+        },
+      },
     });
 
     const notifications = [];
@@ -34,18 +34,31 @@ export class NotificationService {
       if (!card.paymentDueDate) continue;
 
       // Calculate next payment due date
-      let nextPaymentDate = new Date(currentYear, currentMonth, card.paymentDueDate);
+      let nextPaymentDate = new Date(
+        currentYear,
+        currentMonth,
+        card.paymentDueDate,
+      );
       if (currentDay >= card.paymentDueDate) {
-        nextPaymentDate = new Date(currentYear, currentMonth + 1, card.paymentDueDate);
+        nextPaymentDate = new Date(
+          currentYear,
+          currentMonth + 1,
+          card.paymentDueDate,
+        );
       }
 
       // Calculate days until payment
-      const daysUntilPayment = Math.ceil((nextPaymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilPayment = Math.ceil(
+        (nextPaymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+      );
 
       // If payment is due in 5 days or less
       if (daysUntilPayment <= 5 && daysUntilPayment > 0) {
         // Calculate total spending for the current statement period
-        const totalSpending = card.transactions.reduce((sum, t) => sum + t.amount, 0);
+        const totalSpending = card.transactions.reduce(
+          (sum, t) => sum + t.amount,
+          0,
+        );
 
         notifications.push({
           cardId: card.id,
@@ -54,11 +67,11 @@ export class NotificationService {
           paymentDueDate: nextPaymentDate,
           daysUntilPayment,
           totalSpending,
-          message: `Payment of ${totalSpending.toLocaleString()} VNĐ is due in ${daysUntilPayment} day${daysUntilPayment > 1 ? 's' : ''} for ${card.cardName} (${card.bankName})`
+          message: `Payment of ${totalSpending.toLocaleString()} VNĐ is due in ${daysUntilPayment} day${daysUntilPayment > 1 ? "s" : ""} for ${card.cardName} (${card.bankName})`,
         });
       }
     }
 
     return notifications;
   }
-} 
+}

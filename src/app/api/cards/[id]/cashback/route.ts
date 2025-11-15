@@ -2,15 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { CashbackPolicyService } from "~/server/cashback";
 
-export async function GET(
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
 
     const url = new URL(request.url);
     const params = url.searchParams;
@@ -18,7 +15,7 @@ export async function GET(
 
     const summary = await CashbackPolicyService.getCardCashbackSummary(
       id,
-      session.user.id
+      session.user.id,
     );
 
     return NextResponse.json(summary);
@@ -30,7 +27,7 @@ export async function GET(
     }
     return NextResponse.json(
       { error: "Failed to fetch cashback summary" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

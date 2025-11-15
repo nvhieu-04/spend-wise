@@ -13,7 +13,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") ?? "1", 10);
     const pageSize = parseInt(searchParams.get("pageSize") ?? "10", 10);
-    const result = await CashbackPolicyService.getUserPolicies(session.user.id, page, pageSize);
+    const result = await CashbackPolicyService.getUserPolicies(
+      session.user.id,
+      page,
+      pageSize,
+    );
     return Response.json(result);
   } catch {
     return new Response("Internal Server Error", { status: 500 });
@@ -25,10 +29,7 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     if (existingPolicy) {
       return NextResponse.json(
         { error: "A cashback policy already exists for this category" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
     console.error("Error creating cashback policy:", error);
     return NextResponse.json(
       { error: "Failed to create cashback policy" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

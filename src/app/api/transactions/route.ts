@@ -11,7 +11,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") ?? "1", 10);
     const pageSize = parseInt(searchParams.get("pageSize") ?? "10", 10);
-    const result = await TransactionService.getUserTransactions(session.user.id, page, pageSize);
+    const result = await TransactionService.getUserTransactions(
+      session.user.id,
+      page,
+      pageSize,
+    );
     return Response.json(result);
   } catch {
     return new Response("Internal Server Error", { status: 500 });
@@ -27,7 +31,10 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const transaction = await TransactionService.createTransaction(data, session.user.id);
+    const transaction = await TransactionService.createTransaction(
+      data,
+      session.user.id,
+    );
 
     return Response.json(transaction);
   } catch {

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Dialog, { DialogButton, DialogFooter } from "../Dialog";
-import { formatNumberWithDots, parseNumberFromFormatted } from "../../../lib/utils";
+import {
+  formatNumberWithDots,
+  parseNumberFromFormatted,
+} from "../../../lib/utils";
 
 interface Category {
   id: string;
@@ -94,10 +97,12 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
 
     try {
       const amount = parseNumberFromFormatted(formData.amount);
-      const finalAmount = formData.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
+      const finalAmount =
+        formData.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
 
       // Convert empty categoryId to null
-      const categoryId = formData.categoryId === "" ? null : formData.categoryId;
+      const categoryId =
+        formData.categoryId === "" ? null : formData.categoryId;
 
       const response = await fetch(`/api/transactions/${transaction?.id}`, {
         method: "PUT",
@@ -128,7 +133,9 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -137,11 +144,11 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d]/g, '');
+    const value = e.target.value.replace(/[^\d]/g, "");
     const formattedValue = formatNumberWithDots(value);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      amount: formattedValue
+      amount: formattedValue,
     }));
   };
 
@@ -156,13 +163,16 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
         <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="type"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Transaction Type
           </label>
           <select
@@ -170,7 +180,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-white"
+            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             <option value="expense">Expense (Chi tiêu)</option>
             <option value="refund">Refund (Hoàn trả)</option>
@@ -178,7 +188,10 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
         </div>
 
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="amount"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Amount
           </label>
           <div className="relative rounded-md shadow-sm">
@@ -189,17 +202,20 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
               value={formData.amount}
               onChange={handleAmountChange}
               required
-              className="block w-full pl-7 pr-12 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              className="block w-full rounded-lg border border-gray-200 py-2 pr-12 pl-7 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
               placeholder="0"
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
               <span className="text-gray-500 sm:text-sm">VNĐ</span>
             </div>
           </div>
         </div>
 
         <div>
-          <label htmlFor="merchantName" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="merchantName"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Merchant Name
           </label>
           <input
@@ -209,13 +225,16 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
             value={formData.merchantName}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
             placeholder="e.g. Amazon, Starbucks"
           />
         </div>
 
         <div>
-          <label htmlFor="transactionDate" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="transactionDate"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Transaction Date
           </label>
           <input
@@ -225,12 +244,15 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
             value={formData.transactionDate}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="categoryId"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
             Category
           </label>
           <select
@@ -238,7 +260,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
             name="categoryId"
             value={formData.categoryId}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-white"
+            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             <option value="">Select a category</option>
             {categories.map((category) => (
@@ -257,10 +279,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
           >
             Cancel
           </DialogButton>
-          <DialogButton
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <DialogButton type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Updating..." : "Update Transaction"}
           </DialogButton>
         </DialogFooter>
@@ -269,4 +288,4 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
   );
 };
 
-export default EditTransactionDialog; 
+export default EditTransactionDialog;

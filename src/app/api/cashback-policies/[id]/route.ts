@@ -2,16 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { prisma } from "../../../../lib/prisma";
 
-export async function DELETE(
-  request: Request
-) {
+export async function DELETE(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const url = new URL(request.url);
     const id = url.pathname.split("/").pop();
@@ -25,10 +20,7 @@ export async function DELETE(
     });
 
     if (!policy) {
-      return NextResponse.json(
-        { error: "Policy not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Policy not found" }, { status: 404 });
     }
 
     await prisma.cashbackPolicy.delete({
@@ -42,7 +34,7 @@ export async function DELETE(
     console.error("Error deleting cashback policy:", error);
     return NextResponse.json(
       { error: "Failed to delete cashback policy" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

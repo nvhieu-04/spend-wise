@@ -129,7 +129,11 @@ export class CashbackPolicyService {
     });
   }
 
-  static async calculateCashback(cardId: string, categoryId: string, amount: number) {
+  static async calculateCashback(
+    cardId: string,
+    categoryId: string,
+    amount: number,
+  ) {
     // Get all cashback policies for the card and category
     const policies = await prisma.cashbackPolicy.findMany({
       where: {
@@ -183,14 +187,20 @@ export class CashbackPolicyService {
     });
 
     // Calculate total cashback earned
-    const totalCashback = transactions.reduce((sum, t) => sum + (t.cashbackEarned ?? 0), 0);
+    const totalCashback = transactions.reduce(
+      (sum, t) => sum + (t.cashbackEarned ?? 0),
+      0,
+    );
 
     // Group cashback by category
-    const cashbackByCategory = transactions.reduce((acc, t) => {
-      const categoryName = t.category?.name ?? "Uncategorized";
-      acc[categoryName] = (acc[categoryName] ?? 0) + (t.cashbackEarned ?? 0);
-      return acc;
-    }, {} as Record<string, number>);
+    const cashbackByCategory = transactions.reduce(
+      (acc, t) => {
+        const categoryName = t.category?.name ?? "Uncategorized";
+        acc[categoryName] = (acc[categoryName] ?? 0) + (t.cashbackEarned ?? 0);
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return {
       totalCashback,

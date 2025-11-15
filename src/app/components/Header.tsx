@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -10,30 +10,33 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14 sm:h-16">
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 items-center justify-between sm:h-16">
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Image
               src="/logo.png"
               alt="SpendWise Logo"
               width={40}
               height={40}
-              className="h-6 w-6 sm:h-8 sm:w-8 rounded-full" 
+              className="h-6 w-6 rounded-full sm:h-8 sm:w-8"
             />
-            <Link href="/" className="text-[#3A8DFF] text-lg sm:text-xl font-bold hover:text-[#1D6FEA] transition-colors">
+            <Link
+              href="/"
+              className="text-lg font-bold text-[#3A8DFF] transition-colors hover:text-[#1D6FEA] sm:text-xl"
+            >
               SpendWise
             </Link>
           </div>
-          
+
           {/* Desktop Navigation */}
-          <nav className="hidden sm:flex items-center space-x-4">
+          <nav className="hidden items-center space-x-4 sm:flex">
             {session ? (
               <>
                 <NotificationIcon />
                 <Link
                   href="api/auth/signout"
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
                 >
                   Sign Out
                 </Link>
@@ -42,7 +45,7 @@ const Header = () => {
               <>
                 <Link
                   href="api/auth/signin"
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
                 >
                   Sign In
                 </Link>
@@ -51,11 +54,11 @@ const Header = () => {
           </nav>
 
           {/* Mobile Navigation - Show notification icon and menu button */}
-          <div className="sm:hidden flex items-center space-x-2">
+          <div className="flex items-center space-x-2 sm:hidden">
             {session && <NotificationIcon />}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+              className="rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
               aria-label="Toggle mobile menu"
             >
               <svg
@@ -79,13 +82,13 @@ const Header = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="sm:hidden border-t border-gray-100 py-3">
+          <div className="border-t border-gray-100 py-3 sm:hidden">
             <div className="flex flex-col space-y-2">
               {session ? (
                 <>
                   <Link
                     href="api/auth/signout"
-                    className="text-gray-600 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors block"
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Sign Out
@@ -95,7 +98,7 @@ const Header = () => {
                 <>
                   <Link
                     href="api/auth/signin"
-                    className="text-gray-600 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors block"
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Sign In

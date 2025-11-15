@@ -11,6 +11,9 @@ export async function GET() {
     const overview = await StatisticsService.getOverview(session.user.id);
     return NextResponse.json(overview);
   } catch {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

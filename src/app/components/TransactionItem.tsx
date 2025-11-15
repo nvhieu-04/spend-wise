@@ -1,5 +1,5 @@
-import React from 'react';
-import { formatNumberWithDots } from '../../lib/utils';
+import React from "react";
+import { formatNumberWithDots } from "../../lib/utils";
 
 interface TransactionItemProps {
   id: string;
@@ -30,8 +30,8 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   });
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-      <div className="flex justify-between items-start">
+    <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between">
         <div>
           <h3 className="text-sm font-medium text-gray-900">
             {merchantName ?? "Unknown Merchant"}
@@ -40,14 +40,17 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
             {formattedDate} • {category?.name ?? "No Category"}
           </p>
           {cashbackEarned > 0 && (
-            <p className="text-sm text-green-600 mt-1">
+            <p className="mt-1 text-sm text-green-600">
               Cashback: {formatNumberWithDots(cashbackEarned)} {currency}
             </p>
           )}
         </div>
         <div className="text-right">
-          <p className={`text-lg font-semibold ${isExpense ? "text-red-600" : "text-green-600"}`}>
-            {isExpense ? "-" : "+"}{formatNumberWithDots(amount)} {currency}
+          <p
+            className={`text-lg font-semibold ${isExpense ? "text-red-600" : "text-green-600"}`}
+          >
+            {isExpense ? "-" : "+"}
+            {formatNumberWithDots(amount)} {currency}
           </p>
         </div>
       </div>
@@ -55,4 +58,4 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
   );
 };
 
-export default TransactionItem; 
+export default TransactionItem;

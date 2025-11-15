@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     if (!cardId) {
       return NextResponse.json(
         { error: "Card ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     if (!card) {
       return NextResponse.json(
         { error: "Card not found or unauthorized" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch categories" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     if (!name || !cardId) {
       return NextResponse.json(
         { error: "Name and card ID are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     if (!card) {
       return NextResponse.json(
         { error: "Card not found or unauthorized" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
     if (existingCategory) {
       return NextResponse.json(
         { error: "Category with this name already exists for this card" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create category" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

@@ -69,19 +69,29 @@ export default function CardDetailPage() {
   const [card, setCard] = useState<CardDetails | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalCashback, setTotalCashback] = useState(0);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAddTransactionDialogOpen, setIsAddTransactionDialogOpen] = useState(false);
+  const [isAddTransactionDialogOpen, setIsAddTransactionDialogOpen] =
+    useState(false);
   const [isAddCategoryDialogOpen, setIsAddCategoryDialogOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
+  const [selectedCategory, setSelectedCategory] = useState<
+    Category | undefined
+  >();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [filterType, setFilterType] = useState<"week" | "statement">("statement");
+  const [filterType, setFilterType] = useState<"week" | "statement">(
+    "statement",
+  );
   const [selectedWeek, setSelectedWeek] = useState(new Date());
-  const [selectedStatementDate, setSelectedStatementDate] = useState<number | null>(null);
+  const [selectedStatementDate, setSelectedStatementDate] = useState<
+    number | null
+  >(null);
   const [isAddPolicyDialogOpen, setIsAddPolicyDialogOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedMonth] = useState(new Date());
   const [isEditColorDialogOpen, setIsEditColorDialogOpen] = useState(false);
@@ -107,7 +117,8 @@ export default function CardDetailPage() {
       }
 
       const cardData = await cardResponse.json();
-      const transactionsData: TransactionsResponse = await transactionsResponse.json();
+      const transactionsData: TransactionsResponse =
+        await transactionsResponse.json();
 
       setCard(cardData);
       setTransactions(transactionsData.transactions);
@@ -141,7 +152,7 @@ export default function CardDetailPage() {
       const endOfWeek = new Date(selectedWeek);
       endOfWeek.setDate(selectedWeek.getDate() + (6 - selectedWeek.getDay()));
 
-      filtered = transactions.filter(transaction => {
+      filtered = transactions.filter((transaction) => {
         const transactionDate = new Date(transaction.transactionDate);
         return transactionDate >= startOfWeek && transactionDate <= endOfWeek;
       });
@@ -149,36 +160,47 @@ export default function CardDetailPage() {
       // Calculate total cashback for the week
       periodCashback = filtered.reduce(
         (sum, transaction) => sum + (transaction.cashbackEarned || 0),
-        0
+        0,
       );
     } else if (filterType === "statement") {
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
       const currentMonth = currentDate.getMonth();
-      
+
       // Calculate the statement period
       let statementStartDate: Date;
       let statementEndDate: Date;
-      
+
       if (currentDate.getDate() < selectedStatementDate!) {
         // If current date is before statement date, show from last month's statement date to today
-        statementStartDate = new Date(currentYear, currentMonth - 1, selectedStatementDate!);
+        statementStartDate = new Date(
+          currentYear,
+          currentMonth - 1,
+          selectedStatementDate!,
+        );
         statementEndDate = currentDate;
       } else {
         // If current date is after statement date, show from this month's statement date to today
-        statementStartDate = new Date(currentYear, currentMonth, selectedStatementDate!);
+        statementStartDate = new Date(
+          currentYear,
+          currentMonth,
+          selectedStatementDate!,
+        );
         statementEndDate = currentDate;
       }
 
-      filtered = transactions.filter(transaction => {
+      filtered = transactions.filter((transaction) => {
         const transactionDate = new Date(transaction.transactionDate);
-        return transactionDate >= statementStartDate && transactionDate <= statementEndDate;
+        return (
+          transactionDate >= statementStartDate &&
+          transactionDate <= statementEndDate
+        );
       });
 
       // Calculate total cashback for the statement period
       periodCashback = filtered.reduce(
         (sum, transaction) => sum + (transaction.cashbackEarned || 0),
-        0
+        0,
       );
     }
 
@@ -246,7 +268,9 @@ export default function CardDetailPage() {
       fetchCardDetails(); // Refresh card details to update cashback policies
     } catch (err) {
       console.error("Error deleting category:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete category");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete category",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -270,7 +294,9 @@ export default function CardDetailPage() {
       if (card) {
         setCard({
           ...card,
-          cashbackPolicies: card.cashbackPolicies.filter((p) => p.id !== policyId),
+          cashbackPolicies: card.cashbackPolicies.filter(
+            (p) => p.id !== policyId,
+          ),
         });
       }
     } catch (err) {
@@ -301,9 +327,15 @@ export default function CardDetailPage() {
 
   const fetchTransactions = async () => {
     try {
-      const url = new URL(`/api/bank-cards/${cardId}/transactions`, window.location.origin);
+      const url = new URL(
+        `/api/bank-cards/${cardId}/transactions`,
+        window.location.origin,
+      );
       if (filterType === "statement" && selectedStatementDate) {
-        url.searchParams.append("statementDate", selectedStatementDate.toString());
+        url.searchParams.append(
+          "statementDate",
+          selectedStatementDate.toString(),
+        );
         url.searchParams.append("filterType", filterType);
       }
       const response = await fetch(url.toString());
@@ -329,9 +361,9 @@ export default function CardDetailPage() {
   const handleUpdateCardColor = async (newColor: string) => {
     try {
       const response = await fetch(`/api/bank-cards/${cardId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           cardColor: newColor,
@@ -339,24 +371,26 @@ export default function CardDetailPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update card color');
+        throw new Error("Failed to update card color");
       }
 
       const updatedCard = await response.json();
-      setCard(prev => prev ? { ...prev, cardColor: updatedCard.cardColor } : null);
+      setCard((prev) =>
+        prev ? { ...prev, cardColor: updatedCard.cardColor } : null,
+      );
       setIsEditColorDialogOpen(false);
     } catch (error) {
-      console.error('Error updating card color:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      console.error("Error updating card color:", error);
+      setError(error instanceof Error ? error.message : "An error occurred");
     }
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white p-4 sm:p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="mx-auto max-w-4xl">
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-600"></div>
           </div>
         </div>
       </div>
@@ -366,9 +400,11 @@ export default function CardDetailPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-white p-4 sm:p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center py-8 sm:py-12">
-            <h2 className="text-2xl font-semibold mb-4">Error Loading Card Details</h2>
+        <div className="mx-auto max-w-4xl">
+          <div className="py-8 text-center sm:py-12">
+            <h2 className="mb-4 text-2xl font-semibold">
+              Error Loading Card Details
+            </h2>
             <p className="text-red-600">{error}</p>
             <Link
               href="/"
@@ -385,13 +421,10 @@ export default function CardDetailPage() {
   if (!card) {
     return (
       <div className="min-h-screen bg-white p-4 sm:p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center py-8 sm:py-12">
-            <h2 className="text-2xl font-semibold mb-4">Card Not Found</h2>
-            <Link
-              href="/"
-              className="text-blue-600 hover:text-blue-700"
-            >
+        <div className="mx-auto max-w-4xl">
+          <div className="py-8 text-center sm:py-12">
+            <h2 className="mb-4 text-2xl font-semibold">Card Not Found</h2>
+            <Link href="/" className="text-blue-600 hover:text-blue-700">
               ← Back to Cards
             </Link>
           </div>
@@ -402,25 +435,35 @@ export default function CardDetailPage() {
 
   return (
     <div className="min-h-screen bg-white p-4 sm:p-6">
-      <div className="w-full max-w-4xl mx-auto px-0.5">
+      <div className="mx-auto w-full max-w-4xl px-0.5">
         {/* Back button positioned at top left */}
         <div className="mb-4">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center text-sm text-gray-600 transition-colors hover:text-blue-600"
           >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="mr-1 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back to Cards
           </Link>
         </div>
-        
+
         {/* Page header */}
         <div className="mb-4 sm:mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Card Details</h1>
         </div>
-        <div className="flex justify-center mb-4 sm:mb-6">
+        <div className="mb-4 flex justify-center sm:mb-6">
           <div className="w-full max-w-sm">
             <BankCard
               key={card.id}
@@ -435,28 +478,37 @@ export default function CardDetailPage() {
             />
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4 sm:mb-6">
-          <div className="p-3 sm:p-5 space-y-3 sm:space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
-
+        <div className="mb-4 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm sm:mb-6">
+          <div className="space-y-3 p-3 sm:space-y-5 sm:p-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
               {card.statementClosingDate && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Statement Closing Date</h3>
-                  <p className="mt-1 text-base sm:text-lg text-gray-900">Day {card.statementClosingDate} of each month</p>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Statement Closing Date
+                  </h3>
+                  <p className="mt-1 text-base text-gray-900 sm:text-lg">
+                    Day {card.statementClosingDate} of each month
+                  </p>
                 </div>
               )}
               {card.paymentDueDate && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Payment Due Date</h3>
-                  <p className="mt-1 text-base sm:text-lg text-gray-900">Day {card.paymentDueDate} of each month</p>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Payment Due Date
+                  </h3>
+                  <p className="mt-1 text-base text-gray-900 sm:text-lg">
+                    Day {card.paymentDueDate} of each month
+                  </p>
                 </div>
               )}
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Card Color</h3>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Card Color
+                </h3>
                 <div className="mt-1 flex items-center space-x-2">
-                  <div 
-                    className="w-6 h-6 rounded-full border border-gray-200"
-                    style={{ backgroundColor: card.cardColor ?? '#3B82F6' }}
+                  <div
+                    className="h-6 w-6 rounded-full border border-gray-200"
+                    style={{ backgroundColor: card.cardColor ?? "#3B82F6" }}
                   />
                   <button
                     onClick={() => setIsEditColorDialogOpen(true)}
@@ -468,8 +520,10 @@ export default function CardDetailPage() {
               </div>
               {card.creditLimit && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Credit Limit</h3>
-                  <p className="mt-1 text-base sm:text-lg text-gray-900">
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Credit Limit
+                  </h3>
+                  <p className="mt-1 text-base text-gray-900 sm:text-lg">
                     {card.creditLimit.toLocaleString()}VNĐ
                   </p>
                 </div>
@@ -485,36 +539,39 @@ export default function CardDetailPage() {
               </div>
             )}
             <div className="mt-4 sm:mt-6">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Categories</h2>
+              <div className="mb-4 flex flex-col sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="mb-2 text-lg font-semibold text-gray-900 sm:mb-0 sm:text-xl">
+                  Categories
+                </h2>
                 <button
                   onClick={handleAddCategory}
-                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
-                  <PlusIcon className="h-5 w-5 mr-2" />
+                  <PlusIcon className="mr-2 h-5 w-5" />
                   Add Category
                 </button>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+              <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
                 <div className="divide-y divide-gray-100">
                   {categories.length === 0 ? (
-                    <div className="p-4 sm:p-6 text-center text-gray-500">
-                  No categories found. Click &quot;Add Category&quot; to create one.
+                    <div className="p-4 text-center text-gray-500 sm:p-6">
+                      No categories found. Click &quot;Add Category&quot; to
+                      create one.
                     </div>
                   ) : (
                     categories.map((category) => {
                       return (
                         <div
                           key={category.id}
-                          className="p-4 sm:p-6 flex items-center justify-between"
+                          className="flex items-center justify-between p-4 sm:p-6"
                         >
                           <div className="flex-1 pr-4">
-                            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+                            <h3 className="text-base font-medium text-gray-900 sm:text-lg">
                               {category.name}
                             </h3>
                             {category.description && (
-                              <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                              <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                                 {category.description}
                               </p>
                             )}
@@ -524,14 +581,14 @@ export default function CardDetailPage() {
                               onClick={() => handleEditCategory(category)}
                               className="p-2 text-gray-400 hover:text-gray-500"
                             >
-                              <PencilIcon className="h-4 sm:h-5 w-4 sm:w-5" />
+                              <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                             </button>
                             <button
                               onClick={() => handleDeleteCategory(category.id)}
                               disabled={isDeleting}
                               className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
                             >
-                              <TrashIcon className="h-4 sm:h-5 w-4 sm:w-5" />
+                              <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                             </button>
                           </div>
                         </div>
@@ -543,77 +600,87 @@ export default function CardDetailPage() {
             </div>
             {categories.length > 0 && (
               <div className="mt-4 sm:mt-6">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Cashback Policies</h2>
+                <div className="mb-3 flex flex-col sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
+                  <h2 className="mb-2 text-lg font-semibold text-gray-900 sm:mb-0">
+                    Cashback Policies
+                  </h2>
                   <button
                     onClick={() => setIsAddPolicyDialogOpen(true)}
-                    className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                   >
-                    <PlusIcon className="h-5 w-5 mr-2" />
+                    <PlusIcon className="mr-2 h-5 w-5" />
                     Add Policy
                   </button>
                 </div>
                 {error && (
-                  <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-xs sm:text-sm">{error}</p>
+                  <div className="mb-3 rounded-lg border border-red-200 bg-red-50 p-2 sm:mb-4 sm:p-3">
+                    <p className="text-xs text-red-600 sm:text-sm">{error}</p>
                   </div>
                 )}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
                   {card.cashbackPolicies.length === 0 ? (
-                    <div className="p-3 sm:p-4 text-center text-gray-500">
-                      No cashback policies found. Click &quot;Add Policy&quot; to create one.
+                    <div className="p-3 text-center text-gray-500 sm:p-4">
+                      No cashback policies found. Click &quot;Add Policy&quot;
+                      to create one.
                     </div>
-                  ) : card.cashbackPolicies.filter(policy => policy.category).map((policy) => (
-                    <div
-                      key={policy.id}
-                      className="p-4 sm:p-6 flex items-center justify-between border-b last:border-b-0 border-gray-100"
-                    >
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-900">
-                          {policy.category?.name}
-                        </h3>
-                        <p className="mt-1 text-xs sm:text-sm text-blue-600">
-                          Cashback: {policy.cashbackPercentage}%
-                          <span className="text-gray-500">
-                            {policy.maxCashback && ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
-                          </span>
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeletePolicy(policy.id)}
-                        className="text-gray-400 hover:text-red-500 disabled:opacity-50 p-2"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </div>
-                  ))}
+                  ) : (
+                    card.cashbackPolicies
+                      .filter((policy) => policy.category)
+                      .map((policy) => (
+                        <div
+                          key={policy.id}
+                          className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0 sm:p-6"
+                        >
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-900">
+                              {policy.category?.name}
+                            </h3>
+                            <p className="mt-1 text-xs text-blue-600 sm:text-sm">
+                              Cashback: {policy.cashbackPercentage}%
+                              <span className="text-gray-500">
+                                {policy.maxCashback &&
+                                  ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
+                              </span>
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeletePolicy(policy.id)}
+                            className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))
+                  )}
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">Transactions</h2>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+        <div className="mb-3 flex flex-col sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="mb-2 text-xl font-semibold text-gray-900 sm:mb-0">
+            Transactions
+          </h2>
+          <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <div className="text-left sm:text-right">
-              <p className="text-xs sm:text-sm text-gray-500">Total Cashback</p>
-              <p className="text-base sm:text-lg font-semibold text-green-600">
+              <p className="text-xs text-gray-500 sm:text-sm">Total Cashback</p>
+              <p className="text-base font-semibold text-green-600 sm:text-lg">
                 {formatNumberWithDots(totalCashback)} VNĐ
               </p>
             </div>
             <button
               onClick={() => setIsAddTransactionDialogOpen(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
+              <PlusIcon className="mr-2 h-5 w-5" />
               Add Transaction
             </button>
           </div>
         </div>
 
-        <div className="mb-4 sm:mb-5 bg-white rounded-lg shadow-sm border border-gray-100 p-2 sm:p-3">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+        <div className="mb-4 rounded-lg border border-gray-100 bg-white p-2 shadow-sm sm:mb-5 sm:p-3">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
             <div className="flex items-center space-x-2">
               <input
                 type="radio"
@@ -621,9 +688,12 @@ export default function CardDetailPage() {
                 name="filterType"
                 checked={filterType === "week"}
                 onChange={() => setFilterType("week")}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="filterWeek" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="filterWeek"
+                className="text-sm font-medium text-gray-700"
+              >
                 This Week
               </label>
             </div>
@@ -634,9 +704,12 @@ export default function CardDetailPage() {
                 name="filterType"
                 checked={filterType === "statement"}
                 onChange={() => setFilterType("statement")}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="filterStatement" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="filterStatement"
+                className="text-sm font-medium text-gray-700"
+              >
                 Statement Period
               </label>
             </div>
@@ -646,31 +719,70 @@ export default function CardDetailPage() {
             <div className="mt-4 flex items-center justify-between">
               <button
                 onClick={() => handleWeekChange("prev")}
-                className="p-2 rounded-lg hover:bg-gray-100"
+                className="rounded-lg p-2 hover:bg-gray-100"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
-              <span className="text-base sm:text-lg font-medium text-gray-900">
+              <span className="text-base font-medium text-gray-900 sm:text-lg">
                 {format(selectedWeek, "dd/MM/yyyy")}
               </span>
               <button
                 onClick={() => handleWeekChange("next")}
-                className="p-2 rounded-lg hover:bg-gray-100"
+                className="rounded-lg p-2 hover:bg-gray-100"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>
           ) : (
             <div className="mt-4">
-              <p className="text-xs sm:text-sm text-gray-600">
-                Current statement period: {format(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - (new Date().getDate() < selectedStatementDate! ? 1 : 0), selectedStatementDate!), "dd/MM/yyyy")} - {format(new Date(), "dd/MM/yyyy")}
+              <p className="text-xs text-gray-600 sm:text-sm">
+                Current statement period:{" "}
+                {format(
+                  new Date(
+                    selectedMonth.getFullYear(),
+                    selectedMonth.getMonth() -
+                      (new Date().getDate() < selectedStatementDate! ? 1 : 0),
+                    selectedStatementDate!,
+                  ),
+                  "dd/MM/yyyy",
+                )}{" "}
+                - {format(new Date(), "dd/MM/yyyy")}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Next statement closing date: {format(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + (new Date().getDate() >= selectedStatementDate! ? 1 : 0), selectedStatementDate!), "dd/MM/yyyy")}
+              <p className="mt-1 text-xs text-gray-500">
+                Next statement closing date:{" "}
+                {format(
+                  new Date(
+                    selectedMonth.getFullYear(),
+                    selectedMonth.getMonth() +
+                      (new Date().getDate() >= selectedStatementDate! ? 1 : 0),
+                    selectedStatementDate!,
+                  ),
+                  "dd/MM/yyyy",
+                )}
               </p>
             </div>
           )}
@@ -678,36 +790,44 @@ export default function CardDetailPage() {
 
         <div className="space-y-3 sm:space-y-4">
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-500">No transactions found for the selected period</p>
+            <div className="rounded-lg bg-gray-50 py-8 text-center sm:py-12">
+              <p className="text-gray-500">
+                No transactions found for the selected period
+              </p>
             </div>
           ) : (
             filteredTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-lg border border-gray-100"
+                className="flex flex-col justify-between rounded-lg border border-gray-100 bg-white p-3 sm:flex-row sm:items-center sm:p-4"
               >
-                <div className="flex-1 mb-2 sm:mb-0">
+                <div className="mb-2 flex-1 sm:mb-0">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-gray-900">
                       {transaction.merchantName}
                     </h3>
-                    <p className={`text-sm font-medium ${transaction.isExpense ? "text-red-600" : "text-green-600"}`}>
+                    <p
+                      className={`text-sm font-medium ${transaction.isExpense ? "text-red-600" : "text-green-600"}`}
+                    >
                       {formatNumberWithDots(Math.abs(transaction.amount))} VNĐ
                     </p>
                   </div>
                   <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      {format(new Date(transaction.transactionDate), "dd/MM/yyyy")}
+                    <p className="text-xs text-gray-500 sm:text-sm">
+                      {format(
+                        new Date(transaction.transactionDate),
+                        "dd/MM/yyyy",
+                      )}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">
+                    <p className="mt-1 text-xs text-gray-500 sm:mt-0 sm:text-sm">
                       {transaction.category?.name ?? "Unknown Category"}
                     </p>
                   </div>
                   {transaction.cashbackEarned > 0 && (
                     <div className="mt-1">
-                      <p className="text-xs sm:text-sm text-green-600">
-                        Cashback: {formatNumberWithDots(transaction.cashbackEarned)} VNĐ
+                      <p className="text-xs text-green-600 sm:text-sm">
+                        Cashback:{" "}
+                        {formatNumberWithDots(transaction.cashbackEarned)} VNĐ
                       </p>
                     </div>
                   )}
@@ -722,7 +842,7 @@ export default function CardDetailPage() {
                       className="p-2 text-gray-400 hover:text-gray-500"
                     >
                       <svg
-                        className="w-4 sm:w-5 h-4 sm:h-5"
+                        className="h-4 w-4 sm:h-5 sm:w-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -740,7 +860,7 @@ export default function CardDetailPage() {
                       className="p-2 text-red-400 hover:text-red-500"
                     >
                       <svg
-                        className="w-4 sm:w-5 h-4 sm:h-5"
+                        className="h-4 w-4 sm:h-5 sm:w-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -761,43 +881,53 @@ export default function CardDetailPage() {
         </div>
       </div>
 
-      {isAddTransactionDialogOpen && <AddTransactionDialog
-        onClose={() => setIsAddTransactionDialogOpen(false)}
-        cardId={card?.id}
-        onSuccess={handleTransactionAdded}
-      />}
+      {isAddTransactionDialogOpen && (
+        <AddTransactionDialog
+          onClose={() => setIsAddTransactionDialogOpen(false)}
+          cardId={card?.id}
+          onSuccess={handleTransactionAdded}
+        />
+      )}
 
-      {isAddCategoryDialogOpen && <CategoryDialog
-        onClose={() => setIsAddCategoryDialogOpen(false)}
-        category={selectedCategory}
-        onSuccess={handleCategoryDialogSuccess}
-        cardId={cardId}
-      />}
+      {isAddCategoryDialogOpen && (
+        <CategoryDialog
+          onClose={() => setIsAddCategoryDialogOpen(false)}
+          category={selectedCategory}
+          onSuccess={handleCategoryDialogSuccess}
+          cardId={cardId}
+        />
+      )}
 
-      {isAddPolicyDialogOpen && <CashbackPolicyDialog
-        onClose={() => setIsAddPolicyDialogOpen(false)}
-        cardId={cardId}
-        onSuccess={() => {
-          setIsAddPolicyDialogOpen(false);
-          fetchCardDetails();
-        }}
-      />}
+      {isAddPolicyDialogOpen && (
+        <CashbackPolicyDialog
+          onClose={() => setIsAddPolicyDialogOpen(false)}
+          cardId={cardId}
+          onSuccess={() => {
+            setIsAddPolicyDialogOpen(false);
+            fetchCardDetails();
+          }}
+        />
+      )}
 
-      {isEditDialogOpen && <EditTransactionDialog
-        onClose={() => {
-          setIsEditDialogOpen(false);
-          setSelectedTransaction(null);
-        }}
-        transaction={selectedTransaction}
-        onSuccess={fetchTransactions}
-        cardId={cardId}
-      />}
+      {isEditDialogOpen && (
+        <EditTransactionDialog
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setSelectedTransaction(null);
+          }}
+          transaction={selectedTransaction}
+          onSuccess={fetchTransactions}
+          cardId={cardId}
+        />
+      )}
 
-      {isEditColorDialogOpen && <EditCardColorDialog
-        onClose={() => setIsEditColorDialogOpen(false)}
-        cardColor={card.cardColor ?? "#3B82F6"}
-        handleUpdateCardColor={handleUpdateCardColor}
-      />}
+      {isEditColorDialogOpen && (
+        <EditCardColorDialog
+          onClose={() => setIsEditColorDialogOpen(false)}
+          cardColor={card.cardColor ?? "#3B82F6"}
+          handleUpdateCardColor={handleUpdateCardColor}
+        />
+      )}
     </div>
   );
 }
