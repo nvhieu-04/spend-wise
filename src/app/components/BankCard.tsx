@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { formatNumberWithDots } from "../../lib/utils";
 import DeleteBankCardDialog from "./Dialog/DeleteBankCardDialog";
+import CompanyLogo from "./LogoCompany";
 
 interface BankCardProps {
   isAdd?: boolean;
@@ -14,6 +15,7 @@ interface BankCardProps {
   creditLimit?: number;
   cardColor?: string;
   className?: string;
+  onChangeColor?: (hex: string) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -27,26 +29,11 @@ const BankCard: React.FC<BankCardProps> = ({
   creditLimit,
   cardColor,
   className,
+  onChangeColor,
   onDelete,
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  const getCardBackgroundColor = (type: string, color?: string) => {
-    if (color) {
-      return `bg-gradient-to-br`;
-    }
-
-    switch (type.toUpperCase()) {
-      case "VISA":
-        return "bg-gradient-to-br from-blue-500 to-blue-600";
-      case "MASTERCARD":
-        return "bg-gradient-to-br from-orange-500 to-red-500";
-      case "AMEX":
-        return "bg-gradient-to-br from-green-500 to-green-600";
-      default:
-        return "bg-gradient-to-br from-gray-500 to-gray-600";
-    }
-  };
+  const [autoColor, setAutoColor] = useState<string | undefined>(undefined);
 
   const adjustColor = (hex: string, percent: number) => {
     hex = hex.replace(/^#/, "");
@@ -70,11 +57,11 @@ const BankCard: React.FC<BankCardProps> = ({
     <>
       <Link className={className} href={isAdd ? "#" : `/cards/${id}`}>
         <div
-          className={`${getCardBackgroundColor(cardType, cardColor)} relative aspect-[1.6/1] w-full cursor-pointer overflow-hidden rounded-xl transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl`}
+          className={`relative aspect-[1.6/1] w-full cursor-pointer overflow-hidden rounded-xl transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl`}
           style={
-            cardColor
+            cardColor || autoColor
               ? {
-                  background: `linear-gradient(to bottom right, ${cardColor}, ${adjustColor(cardColor, -20)})`,
+                  background: `linear-gradient(to bottom right, ${cardColor || autoColor}, ${adjustColor((cardColor || autoColor) as string, -20)})`,
                 }
               : undefined
           }
@@ -90,10 +77,14 @@ const BankCard: React.FC<BankCardProps> = ({
                     {bankName}
                   </p>
                 </div>
-                <div className="rounded-full bg-white/20 px-1.5 py-0.5 backdrop-blur-sm sm:px-2 sm:py-1 md:px-3">
-                  <span className="text-[10px] text-white sm:text-xs md:text-sm">
-                    {cardType}
-                  </span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white/20 backdrop-blur-sm sm:h-10 sm:w-10 md:h-12 md:w-12">
+                  <CompanyLogo
+                    name={cardType.toLocaleLowerCase()}
+                    onColor={(hex) => {
+                      setAutoColor(hex);
+                      onChangeColor?.(hex);
+                    }}
+                  />
                 </div>
               </div>
 

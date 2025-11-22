@@ -204,7 +204,7 @@ export default function AddBankCardDialog({
                 <ListBox
                   label="Card Type"
                   value={showCustomCardType ? "CUSTOM" : formData.cardType}
-                  listItems={["VISA", "MASTERCARD", "AMEX", "CUSTOM"]}
+                  listItems={["VISA", "MASTERCARD", "AMEX", "JCB", "CUSTOM"]}
                   onChange={(value) => {
                     if (value === "CUSTOM") {
                       setShowCustomCardType(true);
@@ -396,6 +396,9 @@ export default function AddBankCardDialog({
                 : undefined
             }
             cardColor={formData.cardColor}
+            onChangeColor={(hex) =>
+              setFormData((prev) => ({ ...prev, cardColor: hex }))
+            }
           />
         </div>
 
