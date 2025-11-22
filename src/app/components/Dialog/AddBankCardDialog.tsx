@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   formatNumberWithDots,
   parseNumberFromFormatted,
@@ -24,6 +24,11 @@ interface AddBankCardDialogProps {
   onSuccess: () => void;
 }
 
+interface Bank {
+  short_name: string;
+  logo?: string; // if the API provides it; otherwise it will be undefined
+}
+
 export default function AddBankCardDialog({
   onClose,
   onSuccess,
@@ -42,11 +47,25 @@ export default function AddBankCardDialog({
     cardColor: "#3B82F6",
   });
   const [showCustomCardType, setShowCustomCardType] = useState(false);
+  const [banks, setBanks] = useState<Bank[]>([]);
 
-  // validation errors per field
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+
+  const getBanks = async () => {
+    try {
+      const response = await fetch("https://api.vietqr.io/v2/banks");
+      const dataFetch = await response.json();
+      if (response.ok) {
+        setBanks(dataFetch.data);
+      } else {
+        console.error("Failed to fetch banks:", dataFetch.error);
+      }
+    } catch (error) {
+      console.error("Error fetching banks:", error);
+    }
+  };
 
   const validateStep = (s: number) => {
     const errors: Record<string, string> = {};
@@ -82,7 +101,6 @@ export default function AddBankCardDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // ensure server-side won't be called if step 2 validation fails
     if (!validateStep(2)) return;
     setIsSubmitting(true);
     setError(null);
@@ -113,6 +131,10 @@ export default function AddBankCardDialog({
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    getBanks();
+  }, []);
 
   return (
     <Dialog
@@ -146,12 +168,30 @@ export default function AddBankCardDialog({
                     {validationErrors.cardName}
                   </p>
                 )}
-                <TextField
+                {/* <TextField
                   label="Bank Name"
                   name="bankName"
                   placeholder="e.g. Chase Bank"
                   value={formData.bankName}
                   onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, bankName: value }));
+                    setValidationErrors((prev) => ({ ...prev, bankName: "" }));
+                  }}
+                /> */}
+                <ListBox
+                  label="Bank Name"
+                  value={formData.bankName}
+                  listItems={
+                    banks.length > 0
+                      ? banks.map((bank) => ({
+                          value: bank.short_name,
+                          label: bank.short_name,
+                          iconUrl: bank.logo, // safe if undefined
+                        }))
+                      : [{ value: "loading", label: "Loading banks..." }]
+                  }
+                  onChange={(value) => {
+                    if (value === "loading") return;
                     setFormData((prev) => ({ ...prev, bankName: value }));
                     setValidationErrors((prev) => ({ ...prev, bankName: "" }));
                   }}
