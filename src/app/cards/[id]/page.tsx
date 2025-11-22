@@ -5,11 +5,11 @@ import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import BankCard from "~/app/components/BankCard";
+import CreditLimitBar from "~/app/components/CreditLimitBar";
 import AddTransactionDialog from "~/app/components/Dialog/AddTransactionDialog";
 import CashbackPolicyDialog from "~/app/components/Dialog/CashbackPolicyDialog";
 import CategoryDialog from "~/app/components/Dialog/CategoryDialog";
 import EditCardColorDialog from "~/app/components/Dialog/EditCardColorDialog";
-import CreditLimitBar from "~/components/CreditLimitBar";
 import { formatNumberWithDots } from "~/lib/utils";
 import EditTransactionDialog from "../../components/Dialog/EditTransactionDialog";
 
