@@ -13,6 +13,11 @@ const config = {
         hostname: "img.logo.dev",
       },
     ],
+    localPatterns: [
+      {
+        pathname: "/logo.png",
+      },
+    ],
   },
 };
 

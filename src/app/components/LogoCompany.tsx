@@ -13,7 +13,6 @@
 "use client";
 
 import { FastAverageColor } from "fast-average-color";
-import Image from "next/image";
 import { useCallback } from "react";
 
 const LOGO_PUBLIC_KEY =
@@ -55,14 +54,12 @@ function CompanyLogo({
   );
 
   return (
-    <Image
+    <img
       src={`/api/logo?name=${encodeURIComponent(adjustedName)}`}
       alt="Company logo"
-      width={size}
-      height={size}
       className={className}
-      onLoadingComplete={handleComplete}
-      priority
+      onLoad={(e) => handleComplete(e.target as HTMLImageElement)}
+      style={{ width: size, height: size }}
     />
   );
 }
