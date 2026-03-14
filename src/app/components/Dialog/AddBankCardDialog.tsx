@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { getDictionary, type Locale } from "~/i18n";
 import {
   formatNumberWithDots,
   parseNumberFromFormatted,
@@ -33,6 +35,12 @@ export default function AddBankCardDialog({
   onClose,
   onSuccess,
 }: AddBankCardDialogProps) {
+  const pathname = usePathname();
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
@@ -120,13 +128,17 @@ export default function AddBankCardDialog({
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error ?? "Failed to create card");
+        throw new Error(data.error ?? dict.home.errorLoadingCardsTitle);
       }
       onSuccess();
       onClose();
     } catch (error) {
       console.error("Error creating card:", error);
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(
+        error instanceof Error
+          ? error.message
+          : dict.dialogs.common.genericError,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -140,8 +152,8 @@ export default function AddBankCardDialog({
     <Dialog
       isOpen={true}
       onClose={onClose}
-      title="Add New Bank Card"
-      description="Fill in the details to add a new bank card to your account."
+      title={dict.home.addNewCardTitle}
+      description={dict.home.addNewCardDescription}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -154,7 +166,7 @@ export default function AddBankCardDialog({
             {step === 1 && (
               <div>
                 <TextField
-                  label="Card Name"
+                  label={dict.home.addNewCardTitle}
                   name="cardName"
                   placeholder="e.g. My Travel Card"
                   value={formData.cardName}
@@ -179,7 +191,7 @@ export default function AddBankCardDialog({
                   }}
                 /> */}
                 <ListBox
-                  label="Bank Name"
+                  label={dict.qr.bankLabel}
                   value={formData.bankName}
                   listItems={
                     banks.length > 0
@@ -245,7 +257,7 @@ export default function AddBankCardDialog({
                 )}
                 <div className="mt-4 flex items-center space-x-4">
                   <TextField
-                    label="Card Color"
+                    label={dict.cards.cardColorTitle}
                     name="cardColor"
                     value={formData.cardColor}
                     onChange={(value) => {
@@ -300,7 +312,7 @@ export default function AddBankCardDialog({
                 )}
 
                 <TextField
-                  label="Credit Limit (Optional)"
+                  label={dict.cards.creditLimitTitle}
                   name="creditLimit"
                   placeholder="Enter credit limit amount"
                   value={formData.creditLimit}
@@ -325,7 +337,7 @@ export default function AddBankCardDialog({
                   </p>
                 )}
                 <TextField
-                  label="Statement Closing Date (Optional)"
+                  label={dict.cards.statementClosingTitle}
                   name="statementClosingDate"
                   placeholder="Day of month (1-31)"
                   value={
@@ -353,7 +365,7 @@ export default function AddBankCardDialog({
                   </p>
                 )}
                 <TextField
-                  label="Payment Due Date (Optional)"
+                  label={dict.cards.paymentDueTitle}
                   name="paymentDueDate"
                   placeholder="Day of month (1-31)"
                   value={
@@ -416,7 +428,7 @@ export default function AddBankCardDialog({
             }}
             disabled={isSubmitting}
           >
-            {step === 1 ? "Cancel" : "Back"}
+            {step === 1 ? dict.dialogs.common.cancel : "Back"}
           </DialogButton>
           <DialogButton
             type="button"
@@ -438,8 +450,8 @@ export default function AddBankCardDialog({
             disabled={isSubmitting}
           >
             {step === 1 && !isSubmitting && "Next"}
-            {step === 2 && !isSubmitting && "Add Card"}
-            {isSubmitting && "Submitting..."}
+            {step === 2 && !isSubmitting && dict.home.addNewCardTitle}
+            {isSubmitting && dict.dialogs.common.adding}
           </DialogButton>
         </DialogFooter>
       </form>

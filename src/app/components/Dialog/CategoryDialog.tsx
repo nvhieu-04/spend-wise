@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
+import { getDictionary, type Locale } from "~/i18n";
 import Dialog, { DialogButton, DialogFooter } from "../Dialog";
 
 interface Category {
@@ -20,6 +22,12 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
   onSuccess,
   cardId,
 }) => {
+  const pathname = usePathname();
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -51,14 +59,18 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.error ?? "Failed to save category");
+        setError(data.error ?? dict.dialogs.category.saveError);
         return;
       }
 
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(
+        err instanceof Error
+          ? err.message
+          : dict.dialogs.common.genericError,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -78,11 +90,15 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
     <Dialog
       isOpen={true}
       onClose={onClose}
-      title={category ? "Edit Category" : "Add New Category"}
+      title={
+        category
+          ? dict.dialogs.category.editTitle
+          : dict.dialogs.category.addTitle
+      }
       description={
         category
-          ? "Update the category details below."
-          : "Enter the details of your new category below."
+          ? dict.dialogs.category.editDescription
+          : dict.dialogs.category.addDescription
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -97,7 +113,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
             htmlFor="name"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Category Name
+            {dict.dialogs.category.nameLabel}
           </label>
           <input
             type="text"
@@ -107,7 +123,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
             onChange={handleChange}
             required
             className="w-full rounded-lg border border-gray-200 px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            placeholder="e.g. Food & Dining, Shopping"
+            placeholder={dict.dialogs.category.namePlaceholder}
           />
         </div>
 
@@ -116,7 +132,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
             htmlFor="description"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Description (Optional)
+            {dict.dialogs.category.descriptionLabel}
           </label>
           <textarea
             id="description"
@@ -125,7 +141,7 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
             onChange={handleChange}
             rows={3}
             className="w-full rounded-lg border border-gray-200 px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            placeholder="Enter a description for this category"
+            placeholder={dict.dialogs.category.descriptionPlaceholder}
           />
         </div>
 
@@ -135,14 +151,14 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Cancel
+            {dict.dialogs.common.cancel}
           </DialogButton>
           <DialogButton type="submit" disabled={isSubmitting}>
             {isSubmitting
-              ? "Saving..."
+              ? dict.dialogs.common.saving
               : category
-                ? "Save Changes"
-                : "Add Category"}
+                ? dict.dialogs.common.saveChanges
+                : dict.dialogs.category.addButton}
           </DialogButton>
         </DialogFooter>
       </form>

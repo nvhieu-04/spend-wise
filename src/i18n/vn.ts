@@ -146,5 +146,36 @@ export const vn = {
     fetchCardError: "Không thể tải thông tin thẻ",
     fetchTransactionsError: "Không thể tải danh sách giao dịch",
   },
+  dialogs: {
+    common: {
+      cancel: "Hủy",
+      saving: "Đang lưu...",
+      adding: "Đang thêm...",
+      saveChanges: "Lưu thay đổi",
+      genericError: "Có lỗi xảy ra. Vui lòng thử lại.",
+    },
+    category: {
+      addTitle: "Thêm danh mục mới",
+      editTitle: "Chỉnh sửa danh mục",
+      addDescription: "Nhập thông tin cho danh mục mới.",
+      editDescription: "Cập nhật thông tin danh mục bên dưới.",
+      nameLabel: "Tên danh mục",
+      namePlaceholder: "Ví dụ: Ăn uống, Mua sắm",
+      descriptionLabel: "Mô tả (không bắt buộc)",
+      descriptionPlaceholder: "Nhập mô tả cho danh mục này",
+      saveError: "Lưu danh mục thất bại",
+      addButton: "Thêm danh mục",
+    },
+    cashback: {
+      addTitle: "Thêm chính sách hoàn tiền",
+      addDescription: "Thiết lập chính sách hoàn tiền mới cho thẻ này.",
+      categoryPlaceholder: "Chọn một danh mục",
+      percentageLabel: "Phần trăm hoàn tiền",
+      maxLabel: "Mức hoàn tiền tối đa (không bắt buộc)",
+      createError: "Tạo chính sách hoàn tiền thất bại",
+      adding: "Đang thêm...",
+      addButton: "Thêm chính sách",
+    },
+  },
 };
 

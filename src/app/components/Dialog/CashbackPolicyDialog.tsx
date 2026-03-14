@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { getDictionary, type Locale } from "~/i18n";
 import { formatNumberWithDots } from "../../../lib/utils";
 import DialogComponent, { DialogButton, DialogFooter } from "../Dialog";
 
@@ -18,6 +20,12 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   cardId,
   onSuccess,
 }) => {
+  const pathname = usePathname();
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -32,13 +40,17 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
       try {
         const response = await fetch(`/api/categories?cardId=${cardId}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch categories");
+          throw new Error(dict.cards.fetchCategoriesError);
         }
         const data = await response.json();
         setCategories(data);
       } catch (err) {
         console.error("Error fetching categories:", err);
-        setError("Failed to load categories");
+        setError(
+          err instanceof Error
+            ? err.message
+            : dict.cards.fetchCategoriesError,
+        );
       }
     };
 
@@ -69,14 +81,18 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error ?? "Failed to create policy");
+        throw new Error(data.error ?? dict.dialogs.cashback.createError);
       }
 
       onSuccess();
       onClose();
     } catch (err) {
       console.error("Error creating policy:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(
+        err instanceof Error
+          ? err.message
+          : dict.dialogs.common.genericError,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -105,8 +121,8 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
     <DialogComponent
       isOpen={true}
       onClose={onClose}
-      title="Add Cashback Policy"
-      description="Set up a new cashback policy for this card."
+      title={dict.dialogs.cashback.addTitle}
+      description={dict.dialogs.cashback.addDescription}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -120,7 +136,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             htmlFor="categoryId"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Category
+            {dict.cards.categoryFilterTitle}
           </label>
           <select
             id="categoryId"
@@ -130,7 +146,9 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             required
             className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
-            <option value="">Select a category</option>
+            <option value="">
+              {dict.dialogs.cashback.categoryPlaceholder}
+            </option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -144,7 +162,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             htmlFor="cashbackPercentage"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Cashback Percentage
+            {dict.dialogs.cashback.percentageLabel}
           </label>
           <div className="relative rounded-md shadow-sm">
             <input
@@ -171,7 +189,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             htmlFor="maxCashback"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Maximum Cashback (Optional)
+            {dict.dialogs.cashback.maxLabel}
           </label>
           <div className="relative rounded-md shadow-sm">
             <input
@@ -195,10 +213,12 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Cancel
+            {dict.dialogs.common.cancel}
           </DialogButton>
           <DialogButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Adding..." : "Add Policy"}
+            {isSubmitting
+              ? dict.dialogs.cashback.adding
+              : dict.dialogs.cashback.addButton}
           </DialogButton>
         </DialogFooter>
       </form>

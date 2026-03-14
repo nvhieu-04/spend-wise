@@ -147,5 +147,36 @@ export const en = {
     fetchCardError: "Failed to fetch card details",
     fetchTransactionsError: "Failed to fetch transactions",
   },
+  dialogs: {
+    common: {
+      cancel: "Cancel",
+      saving: "Saving...",
+      adding: "Adding...",
+      saveChanges: "Save Changes",
+      genericError: "Something went wrong. Please try again.",
+    },
+    category: {
+      addTitle: "Add New Category",
+      editTitle: "Edit Category",
+      addDescription: "Enter the details of your new category below.",
+      editDescription: "Update the category details below.",
+      nameLabel: "Category Name",
+      namePlaceholder: "e.g. Food & Dining, Shopping",
+      descriptionLabel: "Description (Optional)",
+      descriptionPlaceholder: "Enter a description for this category",
+      saveError: "Failed to save category",
+      addButton: "Add Category",
+    },
+    cashback: {
+      addTitle: "Add Cashback Policy",
+      addDescription: "Set up a new cashback policy for this card.",
+      categoryPlaceholder: "Select a category",
+      percentageLabel: "Cashback Percentage",
+      maxLabel: "Maximum Cashback (Optional)",
+      createError: "Failed to create policy",
+      adding: "Adding...",
+      addButton: "Add Policy",
+    },
+  },
 };
 
