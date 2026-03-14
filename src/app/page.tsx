@@ -119,6 +119,20 @@ export default function HomePage() {
                 {dict.home.featureOrganizeDescription}
               </p>
             </div>
+            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
+              <h3 className="mb-4 text-xl font-semibold text-gray-900">
+                Tối ưu hoàn tiền
+              </h3>
+              <p className="mb-4 text-gray-600">
+                Thử Cashback Optimizer để biết thẻ nào hoàn tiền tốt nhất cho từng giao dịch.
+              </p>
+              <Link
+                href="/cashback-optimizer"
+                className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Mở Cashback Optimizer
+              </Link>
+            </div>
           </div>
         </div>
       </div>

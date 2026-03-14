@@ -49,10 +49,16 @@ export class CashbackPolicyService {
       cardId: string;
       categoryId: string;
       cashbackPercentage: number;
-      maxCashback?: number;
+      maxCashback?: number | null;
+      validFrom?: Date | null;
+      validTo?: Date | null;
+      merchantPattern?: string | null;
     },
     userId: string,
   ) {
+    if (data.validFrom && data.validTo && data.validFrom > data.validTo) {
+      throw new Error("validFrom must be before or equal to validTo");
+    }
     // Verify card ownership
     const card = await prisma.bankCard.findFirst({
       where: {
@@ -88,8 +94,15 @@ export class CashbackPolicyService {
   static async updatePolicy(
     id: string,
     userId: string,
-    data: Partial<Omit<CashbackPolicy, "id" | "cardId" | "createdAt">>,
+    data: Partial<Omit<CashbackPolicy, "id" | "cardId" | "createdAt">> & {
+      validFrom?: Date | null;
+      validTo?: Date | null;
+      merchantPattern?: string | null;
+    },
   ) {
+    if (data.validFrom && data.validTo && data.validFrom > data.validTo) {
+      throw new Error("validFrom must be before or equal to validTo");
+    }
     // If categoryId is being updated, verify it exists
     if (data.categoryId) {
       const category = await prisma.category.findUnique({
@@ -131,10 +144,15 @@ export class CashbackPolicyService {
 
   static async calculateCashback(
     cardId: string,
-    categoryId: string,
+    categoryId: string | null,
     amount: number,
+    transactionDate: Date,
+    merchantName?: string | null,
   ) {
-    // Get all cashback policies for the card and category
+    if (!categoryId) {
+      return 0;
+    }
+
     const policies = await prisma.cashbackPolicy.findMany({
       where: {
         cardId,
@@ -146,15 +164,36 @@ export class CashbackPolicyService {
       return 0;
     }
 
-    // Calculate cashback for each policy and take the maximum
+    const normalizedMerchant = merchantName?.toLowerCase().trim() ?? "";
+
     let maxCashback = 0;
-    for (const policy of policies) {
-      const cashback = (amount * policy.cashbackPercentage) / 100;
+    for (const policy of policies as (CashbackPolicy & {
+      validFrom?: Date | null;
+      validTo?: Date | null;
+      merchantPattern?: string | null;
+    })[]) {
+      if (policy.validFrom && transactionDate < policy.validFrom) {
+        continue;
+      }
+      if (policy.validTo && transactionDate > policy.validTo) {
+        continue;
+      }
+
+      if (policy.merchantPattern) {
+        const pattern = policy.merchantPattern.toLowerCase();
+        if (!normalizedMerchant || !normalizedMerchant.includes(pattern)) {
+          continue;
+        }
+      }
+
+      const cashback = (Math.abs(amount) * policy.cashbackPercentage) / 100;
       const finalCashback = policy.maxCashback
         ? Math.min(cashback, policy.maxCashback)
         : cashback;
 
-      maxCashback = Math.max(maxCashback, finalCashback);
+      if (finalCashback > maxCashback) {
+        maxCashback = finalCashback;
+      }
     }
 
     return maxCashback;
@@ -206,6 +245,105 @@ export class CashbackPolicyService {
       totalCashback,
       cashbackByCategory,
       transactions,
+    };
+  }
+
+  static async getUserCashbackAnalytics(
+    userId: string,
+    from?: Date,
+    to?: Date,
+  ) {
+    const where: any = {
+      card: {
+        userId,
+      },
+      cashbackEarned: {
+        not: 0,
+      },
+    };
+
+    if (from || to) {
+      where.transactionDate = {};
+      if (from) {
+        where.transactionDate.gte = from;
+      }
+      if (to) {
+        where.transactionDate.lte = to;
+      }
+    }
+
+    const transactions = await prisma.transaction.findMany({
+      where,
+      include: {
+        card: true,
+      },
+      orderBy: {
+        transactionDate: "asc",
+      },
+    });
+
+    const perCardPerMonth: {
+      cardId: string;
+      cardName: string;
+      bankName: string;
+      month: string;
+      totalCashback: number;
+    }[] = [];
+
+    const totalPerMonthMap: Record<string, number> = {};
+    const perCardPerMonthMap: Record<string, number> = {};
+
+    for (const tx of transactions) {
+      const date = tx.transactionDate;
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}`;
+      const key = `${tx.cardId}-${monthKey}`;
+      const cashback = tx.cashbackEarned ?? 0;
+
+      perCardPerMonthMap[key] = (perCardPerMonthMap[key] ?? 0) + cashback;
+      totalPerMonthMap[monthKey] = (totalPerMonthMap[monthKey] ?? 0) + cashback;
+    }
+
+    for (const [key, value] of Object.entries(perCardPerMonthMap)) {
+      const [cardId, ...monthParts] = key.split("-");
+      if (!cardId || monthParts.length === 0) {
+        continue;
+      }
+      const month = monthParts.join("-");
+      const card = transactions.find((t) => t.cardId === cardId)?.card;
+      if (!card) continue;
+      perCardPerMonth.push({
+        cardId,
+        cardName: card.cardName,
+        bankName: card.bankName,
+        month,
+        totalCashback: value,
+      });
+    }
+
+    const totalPerMonth = Object.entries(totalPerMonthMap).map(
+      ([month, value]) => ({
+        month,
+        totalCashback: value,
+      }),
+    );
+
+    const cards = Array.from(
+      new Map(
+        transactions.map((t) => [t.cardId, t.card]),
+      ).values(),
+    ).map((card) => ({
+      id: card.id,
+      cardName: card.cardName,
+      bankName: card.bankName,
+      cardColor: card.cardColor,
+    }));
+
+    return {
+      perCardPerMonth,
+      totalPerMonth,
+      cards,
     };
   }
 }

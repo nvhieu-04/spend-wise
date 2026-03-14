@@ -24,7 +24,10 @@ interface CashbackPolicy {
   id: string;
   categoryId: string;
   cashbackPercentage: number;
-  maxCashback?: number;
+  maxCashback?: number | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  merchantPattern?: string | null;
   category: {
     name: string;
   };
@@ -112,6 +115,9 @@ export default function CardDetailPage() {
     "all",
   );
   const [globalSearch, setGlobalSearch] = useState<string>("");
+  const [editingPolicy, setEditingPolicy] = useState<CashbackPolicy | null>(
+    null,
+  );
 
   const fetchCardDetails = async () => {
     try {
@@ -815,34 +821,72 @@ export default function CardDetailPage() {
                       {dict.cards.noPoliciesMessage}
                     </div>
                   ) : (
-                    card.cashbackPolicies
-                      .filter((policy) => policy.category)
-                      .map((policy) => (
+                    categories.map((category) => {
+                      const policiesForCategory = card.cashbackPolicies.filter(
+                        (p) => p.categoryId === category.id,
+                      );
+                      if (policiesForCategory.length === 0) {
+                        return null;
+                      }
+                      return (
                         <div
-                          key={policy.id}
-                          className="flex items-center justify-between border-b border-gray-100 p-4 last:border-b-0 sm:p-6"
+                          key={category.id}
+                          className="border-b border-gray-100 p-4 last:border-b-0 sm:p-5"
                         >
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-900">
-                              {policy.category?.name}
+                          <div className="mb-2 flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-gray-900 sm:text-base">
+                              {category.name}
                             </h3>
-                            <p className="mt-1 text-xs text-blue-600 sm:text-sm">
-                              {dict.cards.cashbackLabel}{" "}
-                              {policy.cashbackPercentage}%
-                              <span className="text-gray-500">
-                                {policy.maxCashback &&
-                                  ` (${dict.cards.cashbackMaxPrefix} ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
-                              </span>
-                            </p>
                           </div>
-                          <button
-                            onClick={() => handleDeletePolicy(policy.id)}
-                            className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
+                          <div className="space-y-2">
+                            {policiesForCategory.map((policy) => (
+                              <div
+                                key={policy.id}
+                                className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-xs sm:text-sm"
+                              >
+                                <div>
+                                  <p className="font-medium text-gray-900">
+                                    {policy.cashbackPercentage}%{" "}
+                                    {policy.maxCashback &&
+                                      `• ${dict.cards.cashbackMaxPrefix} ${formatNumberWithDots(policy.maxCashback)} VNĐ`}
+                                  </p>
+                                  {(policy.validFrom || policy.validTo) && (
+                                    <p className="mt-0.5 text-[11px] text-gray-500 sm:text-xs">
+                                      {policy.validFrom &&
+                                        `Từ ${format(new Date(policy.validFrom), "dd/MM/yyyy")} `}
+                                      {policy.validTo &&
+                                        `đến ${format(new Date(policy.validTo), "dd/MM/yyyy")}`}
+                                    </p>
+                                  )}
+                                  {policy.merchantPattern && (
+                                    <p className="mt-0.5 text-[11px] text-blue-600 sm:text-xs">
+                                      Merchant: {policy.merchantPattern}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-1 sm:space-x-2">
+                                  <button
+                                    onClick={() => {
+                                      setEditingPolicy(policy);
+                                      setIsAddPolicyDialogOpen(true);
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-gray-600"
+                                  >
+                                    <PencilIcon className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePolicy(policy.id)}
+                                    className="p-1 text-gray-400 hover:text-red-500 disabled:opacity-50"
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -1226,8 +1270,10 @@ export default function CardDetailPage() {
         <CashbackPolicyDialog
           onClose={() => setIsAddPolicyDialogOpen(false)}
           cardId={cardId}
+          policy={editingPolicy ?? undefined}
           onSuccess={() => {
             setIsAddPolicyDialogOpen(false);
+            setEditingPolicy(null);
             fetchCardDetails();
           }}
         />

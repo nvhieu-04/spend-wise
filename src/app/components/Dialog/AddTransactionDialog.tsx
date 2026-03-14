@@ -12,6 +12,9 @@ interface CashbackPolicy {
   categoryId: string;
   cashbackPercentage: number;
   maxCashback: number | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  merchantPattern?: string | null;
   category: {
     name: string;
   };
@@ -140,21 +143,54 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
       return null;
     }
 
-    const policy = cashbackPolicies.find(
-      (p) => p.categoryId === formData.categoryId,
-    );
+    const today = new Date(formData.transactionDate);
+    const normalizedMerchant = formData.merchantName.toLowerCase().trim();
 
-    if (!policy) return null;
+    const applicablePolicies = cashbackPolicies.filter((p) => {
+      if (p.categoryId !== formData.categoryId) return false;
+
+      if (p.validFrom && today < new Date(p.validFrom)) return false;
+      if (p.validTo && today > new Date(p.validTo)) return false;
+
+      if (p.merchantPattern) {
+        const pattern = p.merchantPattern.toLowerCase();
+        if (!normalizedMerchant || !normalizedMerchant.includes(pattern)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    if (applicablePolicies.length === 0) return null;
 
     const amount = parseNumberFromFormatted(formData.amount);
-    const cashback = (amount * policy.cashbackPercentage) / 100;
-    const finalCashback = policy.maxCashback
-      ? Math.min(cashback, policy.maxCashback)
-      : cashback;
+    let best = null as
+      | {
+          policy: CashbackPolicy;
+          amount: number;
+        }
+      | null;
+
+    for (const policy of applicablePolicies) {
+      const cashback = (amount * policy.cashbackPercentage) / 100;
+      const finalCashback = policy.maxCashback
+        ? Math.min(cashback, policy.maxCashback)
+        : cashback;
+
+      if (!best || finalCashback > best.amount) {
+        best = { policy, amount: finalCashback };
+      }
+    }
+
+    if (!best) return null;
 
     return {
-      percentage: policy.cashbackPercentage,
-      amount: finalCashback,
+      percentage: best.policy.cashbackPercentage,
+      amount: best.amount,
+      merchantPattern: best.policy.merchantPattern,
+      validFrom: best.policy.validFrom,
+      validTo: best.policy.validTo,
     };
   };
 
@@ -282,12 +318,26 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         {cashbackInfo && (
           <div className="rounded-lg bg-blue-50 p-4">
             <p className="text-sm text-gray-900">
-              Cashback Policy: {cashbackInfo.percentage}%
+              Ước tính hoàn tiền:{" "}
+              <span className="font-semibold text-blue-700">
+                +{formatNumberWithDots(cashbackInfo.amount)} {formData.currency}
+              </span>{" "}
+              ({cashbackInfo.percentage}%)
             </p>
-            <p className="mt-1 text-lg font-semibold text-blue-600">
-              Estimated Cashback: {formatNumberWithDots(cashbackInfo.amount)}{" "}
-              {formData.currency}
-            </p>
+            {(cashbackInfo.merchantPattern ||
+              cashbackInfo.validFrom ||
+              cashbackInfo.validTo) && (
+              <p className="mt-1 text-xs text-gray-600">
+                Áp dụng cho{" "}
+                {cashbackInfo.merchantPattern
+                  ? `merchant chứa "${cashbackInfo.merchantPattern}"`
+                  : "merchant bất kỳ"}
+                {cashbackInfo.validFrom &&
+                  ` từ ${cashbackInfo.validFrom.split("T")[0]}`}
+                {cashbackInfo.validTo &&
+                  ` đến ${cashbackInfo.validTo.split("T")[0]}`}
+              </p>
+            )}
           </div>
         )}
 

@@ -93,6 +93,9 @@ model CashbackPolicy {
   categoryId         String   @db.ObjectId
   cashbackPercentage Float
   maxCashback        Float?
+  validFrom          DateTime?
+  validTo            DateTime?
+  merchantPattern    String?
   createdAt          DateTime @default(now())
   card               BankCard @relation("BankCardToCashbackPolicy", fields: [cardId], references: [id], onDelete: Cascade)
   category           Category @relation(fields: [categoryId], references: [id])

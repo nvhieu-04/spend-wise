@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { prisma } from "../../../../../lib/prisma";
+import { CashbackPolicyService } from "~/server/cashback";
 
 export async function GET(request: Request) {
   try {
@@ -77,37 +78,24 @@ export async function GET(request: Request) {
       },
     });
 
-    // Calculate cashback for each transaction
-    const transactionsWithCashback = transactions.map((transaction) => {
-      if (!transaction.categoryId) {
+    const transactionsWithCashback = await Promise.all(
+      transactions.map(async (transaction) => {
+        const cashback = await CashbackPolicyService.calculateCashback(
+          transaction.cardId,
+          transaction.categoryId ?? null,
+          transaction.amount,
+          transaction.transactionDate,
+          transaction.merchantName ?? null,
+        );
+
+        const signedCashback = transaction.isExpense ? cashback : -cashback;
+
         return {
           ...transaction,
-          cashbackEarned: 0,
+          cashbackEarned: signedCashback,
         };
-      }
-
-      const policy = transaction.card.cashbackPolicies.find(
-        (p) => p.categoryId === transaction.categoryId,
-      );
-
-      if (!policy) {
-        return {
-          ...transaction,
-          cashbackEarned: 0,
-        };
-      }
-
-      const cashbackAmount =
-        (Math.abs(transaction.amount) * policy.cashbackPercentage) / 100;
-      const finalCashback = policy.maxCashback
-        ? Math.min(cashbackAmount, policy.maxCashback)
-        : cashbackAmount;
-
-      return {
-        ...transaction,
-        cashbackEarned: transaction.isExpense ? finalCashback : -finalCashback,
-      };
-    });
+      }),
+    );
 
     // Calculate total cashback
     const totalCashback = transactionsWithCashback.reduce(
@@ -199,20 +187,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // Calculate cashback if it's an expense and has a category
     let cashbackEarned = 0;
     if (categoryId) {
-      const policy = card.cashbackPolicies.find(
-        (p) => p.categoryId === categoryId,
+      const cashback = await CashbackPolicyService.calculateCashback(
+        card.id,
+        categoryId,
+        amount,
+        new Date(transactionDate),
+        merchantName ?? null,
       );
-      if (policy) {
-        const cashbackAmount =
-          (Math.abs(amount) * policy.cashbackPercentage) / 100;
-        const finalCashback = policy.maxCashback
-          ? Math.min(cashbackAmount, policy.maxCashback)
-          : cashbackAmount;
-        cashbackEarned = amount < 0 ? finalCashback : -finalCashback;
-      }
+      cashbackEarned = amount < 0 ? cashback : -cashback;
     }
 
     // Create the transaction

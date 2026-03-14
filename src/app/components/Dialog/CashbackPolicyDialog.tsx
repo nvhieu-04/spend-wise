@@ -9,16 +9,28 @@ interface Category {
   name: string;
 }
 
+interface CashbackPolicy {
+  id: string;
+  categoryId: string;
+  cashbackPercentage: number;
+  maxCashback?: number | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  merchantPattern?: string | null;
+}
+
 interface CashbackPolicyDialogProps {
   onClose: () => void;
   cardId: string;
   onSuccess: () => void;
+  policy?: CashbackPolicy;
 }
 
 const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   onClose,
   cardId,
   onSuccess,
+  policy,
 }) => {
   const pathname = usePathname();
   const [, maybeLocale] = pathname.split("/");
@@ -30,9 +42,18 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
-    categoryId: "",
-    cashbackPercentage: "",
-    maxCashback: "",
+    categoryId: policy?.categoryId ?? "",
+    cashbackPercentage: policy
+      ? String(policy.cashbackPercentage)
+      : "",
+    maxCashback: policy?.maxCashback
+      ? formatNumberWithDots(String(Math.round(policy.maxCashback)))
+      : "",
+    validFrom: policy?.validFrom
+      ? policy.validFrom.split("T")[0]
+      : "",
+    validTo: policy?.validTo ? policy.validTo.split("T")[0] : "",
+    merchantPattern: policy?.merchantPattern ?? "",
   });
 
   useEffect(() => {
@@ -63,19 +84,28 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
     setError(null);
 
     try {
-      const response = await fetch("/api/cashback-policies", {
-        method: "POST",
+      const payload = {
+        cardId,
+        categoryId: formData.categoryId,
+        cashbackPercentage: parseFloat(formData.cashbackPercentage),
+        maxCashback: formData.maxCashback
+          ? parseInt(formData.maxCashback.replace(/\./g, ""))
+          : null,
+        validFrom: formData.validFrom || null,
+        validTo: formData.validTo || null,
+        merchantPattern: formData.merchantPattern || null,
+      };
+
+      const url = policy
+        ? `/api/cashback-policies/${policy.id}`
+        : "/api/cashback-policies";
+
+      const response = await fetch(url, {
+        method: policy ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          cardId,
-          categoryId: formData.categoryId,
-          cashbackPercentage: parseFloat(formData.cashbackPercentage),
-          maxCashback: formData.maxCashback
-            ? parseInt(formData.maxCashback.replace(/\./g, ""))
-            : null,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -145,6 +175,7 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
             onChange={handleChange}
             required
             className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            disabled={!!policy}
           >
             <option value="">
               {dict.dialogs.cashback.categoryPlaceholder}
@@ -205,6 +236,58 @@ const CashbackPolicyDialog: React.FC<CashbackPolicyDialogProps> = ({
               <span className="text-gray-500 sm:text-sm">VNĐ</span>
             </div>
           </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="validFrom"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              Thời gian hiệu lực từ
+            </label>
+            <input
+              type="date"
+              id="validFrom"
+              name="validFrom"
+              value={formData.validFrom}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="validTo"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              Thời gian hiệu lực đến
+            </label>
+            <input
+              type="date"
+              id="validTo"
+              name="validTo"
+              value={formData.validTo}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="merchantPattern"
+            className="mb-2 block text-sm font-medium text-gray-700"
+          >
+            Merchant áp dụng (tuỳ chọn)
+          </label>
+          <input
+            id="merchantPattern"
+            name="merchantPattern"
+            value={formData.merchantPattern}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="VD: Shopee, Grab, Highlands..."
+          />
         </div>
 
         <DialogFooter>

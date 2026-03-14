@@ -9,6 +9,14 @@ export const en = {
     dashboard: "Dashboard",
     qr: "QR Payment",
   },
+  cashback: {
+    optimizerTitle: "Cashback Optimizer",
+    optimizerDescription:
+      "Enter amount and transaction info to find the best card for cashback.",
+    analyticsTitle: "Cashback Analytics",
+    analyticsDescription:
+      "Overview of cashback earned per card and over time.",
+  },
   home: {
     heroTitleLine1: "Manage Your",
     heroTitleLine2: "Bank Cards",

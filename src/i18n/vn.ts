@@ -9,6 +9,14 @@ export const vn = {
     dashboard: "Dashboard tổng quan",
     qr: "Thanh toán QR",
   },
+  cashback: {
+    optimizerTitle: "Cashback Optimizer",
+    optimizerDescription:
+      "Nhập số tiền và thông tin giao dịch để gợi ý thẻ có hoàn tiền tốt nhất.",
+    analyticsTitle: "Thống kê cashback",
+    analyticsDescription:
+      "Tổng quan số tiền hoàn lại theo từng thẻ và theo thời gian.",
+  },
   home: {
     heroTitleLine1: "Quản lý",
     heroTitleLine2: "Thẻ ngân hàng của bạn",
