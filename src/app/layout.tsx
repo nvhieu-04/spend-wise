@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "SpendWise - Manage Your Bank Cards",
   description:
-    "Track your credit cards, monitor spending, and maximize your rewards in one place.",
+    "Manage your bank cards, track spending, and maximize rewards in one place.",
   icons: {
     icon: "/logo.png",
   },

@@ -13,7 +13,7 @@ export const vn = {
     heroTitleLine1: "Quản lý",
     heroTitleLine2: "Thẻ ngân hàng của bạn",
     heroDescription:
-      "Theo dõi thẻ tín dụng, quản lý chi tiêu và tối ưu hóa ưu đãi hoàn tiền của bạn ở một nơi.",
+      "Quản lý thẻ ngân hàng, theo dõi chi tiêu và tối ưu hóa ưu đãi hoàn tiền của bạn ở một nơi.",
     heroCta: "Đăng nhập",
     featureTrackTitle: "Theo dõi chi tiêu",
     featureTrackDescription:

@@ -13,7 +13,7 @@ export const en = {
     heroTitleLine1: "Manage Your",
     heroTitleLine2: "Bank Cards",
     heroDescription:
-      "Track your credit cards, monitor spending, and maximize your rewards in one place.",
+      "Manage your bank cards, track spending, and maximize rewards in one place.",
     heroCta: "Sign In",
     featureTrackTitle: "Track Spending",
     featureTrackDescription:
