@@ -173,7 +173,7 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
             htmlFor="type"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Transaction Type
+            Loại giao dịch
           </label>
           <select
             id="type"
@@ -182,8 +182,8 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
             onChange={handleChange}
             className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
-            <option value="expense">Expense (Chi tiêu)</option>
-            <option value="refund">Refund (Hoàn trả)</option>
+            <option value="expense">Ghi nợ (chi tiêu)</option>
+            <option value="refund">Ghi có (hoàn / trả lại)</option>
           </select>
         </div>
 

@@ -95,6 +95,16 @@ export default function CardDetailPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedMonth] = useState(new Date());
   const [isEditColorDialogOpen, setIsEditColorDialogOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
+  const [filterCategoryId, setFilterCategoryId] = useState<string>("all");
+  const [minAmount, setMinAmount] = useState<string>("");
+  const [maxAmount, setMaxAmount] = useState<string>("");
+  const [merchantSearch, setMerchantSearch] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "expense" | "refund">(
+    "all",
+  );
+  const [globalSearch, setGlobalSearch] = useState<string>("");
 
   const fetchCardDetails = async () => {
     try {
@@ -150,35 +160,26 @@ export default function CardDetailPage() {
         const transactionDate = new Date(transaction.transactionDate);
         return transactionDate >= startOfWeek && transactionDate <= endOfWeek;
       });
-
-      // Calculate total cashback for the week
-      periodCashback = filtered.reduce(
-        (sum, transaction) => sum + (transaction.cashbackEarned || 0),
-        0,
-      );
-    } else if (filterType === "statement") {
+    } else if (filterType === "statement" && selectedStatementDate) {
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
       const currentMonth = currentDate.getMonth();
 
-      // Calculate the statement period
       let statementStartDate: Date;
       let statementEndDate: Date;
 
-      if (currentDate.getDate() < selectedStatementDate!) {
-        // If current date is before statement date, show from last month's statement date to today
+      if (currentDate.getDate() < selectedStatementDate) {
         statementStartDate = new Date(
           currentYear,
           currentMonth - 1,
-          selectedStatementDate!,
+          selectedStatementDate,
         );
         statementEndDate = currentDate;
       } else {
-        // If current date is after statement date, show from this month's statement date to today
         statementStartDate = new Date(
           currentYear,
           currentMonth,
-          selectedStatementDate!,
+          selectedStatementDate,
         );
         statementEndDate = currentDate;
       }
@@ -190,17 +191,91 @@ export default function CardDetailPage() {
           transactionDate <= statementEndDate
         );
       });
+    }
 
-      // Calculate total cashback for the statement period
-      periodCashback = filtered.reduce(
-        (sum, transaction) => sum + (transaction.cashbackEarned || 0),
-        0,
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      filtered = filtered.filter(
+        (transaction) =>
+          new Date(transaction.transactionDate) >= from,
       );
     }
 
+    if (dateTo) {
+      const to = new Date(dateTo);
+      filtered = filtered.filter(
+        (transaction) => new Date(transaction.transactionDate) <= to,
+      );
+    }
+
+    if (filterCategoryId !== "all") {
+      filtered = filtered.filter(
+        (transaction) => transaction.categoryId === filterCategoryId,
+      );
+    }
+
+    const min = minAmount ? parseFloat(minAmount) : undefined;
+    const max = maxAmount ? parseFloat(maxAmount) : undefined;
+
+    if (min !== undefined || max !== undefined) {
+      filtered = filtered.filter((transaction) => {
+        const value = Math.abs(transaction.amount);
+        if (min !== undefined && value < min) return false;
+        if (max !== undefined && value > max) return false;
+        return true;
+      });
+    }
+
+    if (merchantSearch.trim()) {
+      const term = merchantSearch.trim().toLowerCase();
+      filtered = filtered.filter((transaction) =>
+        transaction.merchantName
+          ?.toLowerCase()
+          .includes(term),
+      );
+    }
+
+    if (typeFilter === "expense") {
+      filtered = filtered.filter((transaction) => transaction.isExpense);
+    } else if (typeFilter === "refund") {
+      filtered = filtered.filter((transaction) => !transaction.isExpense);
+    }
+
+    if (globalSearch.trim()) {
+      const term = globalSearch.trim().toLowerCase();
+      filtered = filtered.filter((transaction) => {
+        const merchant = transaction.merchantName?.toLowerCase() ?? "";
+        const categoryName = transaction.category?.name
+          ?.toLowerCase()
+          ?? "";
+        return (
+          merchant.includes(term) ||
+          categoryName.includes(term)
+        );
+      });
+    }
+
+    periodCashback = filtered.reduce(
+      (sum, transaction) => sum + (transaction.cashbackEarned || 0),
+      0,
+    );
+
     setTotalCashback(periodCashback);
     setFilteredTransactions(filtered);
-  }, [transactions, filterType, selectedWeek, selectedStatementDate]);
+  }, [
+    transactions,
+    filterType,
+    selectedWeek,
+    selectedStatementDate,
+    dateFrom,
+    dateTo,
+    filterCategoryId,
+    minAmount,
+    maxAmount,
+    merchantSearch,
+    typeFilter,
+    globalSearch,
+  ]);
 
   const handleTransactionAdded = () => {
     // Refresh transactions after adding a new one
@@ -455,7 +530,64 @@ export default function CardDetailPage() {
 
         {/* Page header */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Card Details</h1>
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Card Details
+              </h1>
+              {card.statementClosingDate && card.paymentDueDate && (
+                <p className="mt-1 text-sm text-gray-600">
+                  Statement closes on day {card.statementClosingDate}, payment
+                  due on day {card.paymentDueDate} each month.
+                </p>
+              )}
+            </div>
+            {card.paymentDueDate && (
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                {(() => {
+                  const today = new Date();
+                  const currentDay = today.getDate();
+                  const currentMonth = today.getMonth();
+                  const currentYear = today.getFullYear();
+                  let nextPaymentDate = new Date(
+                    currentYear,
+                    currentMonth,
+                    card.paymentDueDate!,
+                  );
+                  if (currentDay >= card.paymentDueDate!) {
+                    nextPaymentDate = new Date(
+                      currentYear,
+                      currentMonth + 1,
+                      card.paymentDueDate!,
+                    );
+                  }
+                  const daysUntilPayment = Math.ceil(
+                    (nextPaymentDate.getTime() - today.getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  );
+                  if (daysUntilPayment <= 0) {
+                    return (
+                      <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
+                        Payment due now
+                      </span>
+                    );
+                  }
+                  if (daysUntilPayment <= 5) {
+                    return (
+                      <span className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700">
+                        Payment due in {daysUntilPayment} days
+                      </span>
+                    );
+                  }
+                  return (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                      Next payment in {daysUntilPayment} days
+                    </span>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
         </div>
         <div className="mb-4 flex justify-center sm:mb-6">
           <div className="w-full max-w-sm">
@@ -528,7 +660,49 @@ export default function CardDetailPage() {
               )}
             </div>
             {card.creditLimit && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                  {(() => {
+                    const remaining =
+                      (card.currentSpending ?? 0) -
+                      (card.currentRepayment ?? 0);
+                    const remainingDue = Math.max(remaining, 0);
+                    const usage =
+                      card.creditLimit > 0
+                        ? (remainingDue / card.creditLimit) * 100
+                        : 0;
+                    let badgeClass =
+                      "bg-emerald-50 text-emerald-700 border-emerald-100";
+                    let label = "Usage under control";
+                    if (usage >= 80) {
+                      badgeClass =
+                        "bg-red-50 text-red-700 border-red-100";
+                      label = "High utilization";
+                    } else if (usage >= 50) {
+                      badgeClass =
+                        "bg-orange-50 text-orange-700 border-orange-100";
+                      label = "Medium utilization";
+                    }
+                    return (
+                      <>
+                        <span className="text-gray-600">
+                          Remaining to repay:{" "}
+                          <span className="font-semibold text-gray-900">
+                            {formatNumberWithDots(
+                              Math.round(remainingDue),
+                            )}{" "}
+                            VNĐ
+                          </span>
+                        </span>
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass}`}
+                        >
+                          {label} • {usage.toFixed(0)}% limit used
+                        </span>
+                      </>
+                    );
+                  })()}
+                </div>
                 <CreditLimitBar
                   creditLimit={card.creditLimit}
                   currentSpending={card.currentSpending ?? 0}
@@ -662,7 +836,9 @@ export default function CardDetailPage() {
           </h2>
           <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <div className="text-left sm:text-right">
-              <p className="text-xs text-gray-500 sm:text-sm">Total Cashback</p>
+              <p className="text-xs text-gray-500 sm:text-sm">
+                Cashback for filtered period
+              </p>
               <p className="text-base font-semibold text-green-600 sm:text-lg">
                 {formatNumberWithDots(totalCashback)} VNĐ
               </p>
@@ -677,113 +853,240 @@ export default function CardDetailPage() {
           </div>
         </div>
 
-        <div className="mb-4 rounded-lg border border-gray-100 bg-white p-2 shadow-sm sm:mb-5 sm:p-3">
-          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-            <div className="flex items-center space-x-2">
-              <input
-                type="radio"
-                id="filterWeek"
-                name="filterType"
-                checked={filterType === "week"}
-                onChange={() => setFilterType("week")}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label
-                htmlFor="filterWeek"
-                className="text-sm font-medium text-gray-700"
-              >
-                This Week
-              </label>
+        <div className="mb-4 rounded-lg border border-gray-100 bg-white p-3 shadow-sm sm:mb-5 sm:p-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-gray-500">
+                Kỳ lọc thời gian
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setFilterType("week")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    filterType === "week"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Tuần này
+                </button>
+                <button
+                  onClick={() => setFilterType("statement")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    filterType === "statement"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Kỳ sao kê
+                </button>
+              </div>
+              {filterType === "week" ? (
+                <div className="mt-1 flex items-center justify-between rounded-lg bg-gray-50 px-2 py-1.5">
+                  <button
+                    onClick={() => handleWeekChange("prev")}
+                    className="rounded-lg p-1 hover:bg-gray-100"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-xs font-medium text-gray-900">
+                    {format(selectedWeek, "dd/MM/yyyy")}
+                  </span>
+                  <button
+                    onClick={() => handleWeekChange("next")}
+                    className="rounded-lg p-1 hover:bg-gray-100"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                selectedStatementDate && (
+                  <div className="mt-1 rounded-lg bg-gray-50 px-2 py-1.5 text-xs text-gray-600">
+                    <p>
+                      Kỳ sao kê hiện tại: từ{" "}
+                      {format(
+                        new Date(
+                          selectedMonth.getFullYear(),
+                          selectedMonth.getMonth() -
+                            (new Date().getDate() < selectedStatementDate
+                              ? 1
+                              : 0),
+                          selectedStatementDate,
+                        ),
+                        "dd/MM/yyyy",
+                      )}{" "}
+                      đến {format(new Date(), "dd/MM/yyyy")}
+                    </p>
+                  </div>
+                )
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="radio"
-                id="filterStatement"
-                name="filterType"
-                checked={filterType === "statement"}
-                onChange={() => setFilterType("statement")}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label
-                htmlFor="filterStatement"
-                className="text-sm font-medium text-gray-700"
-              >
-                Statement Period
-              </label>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-gray-500">
+                Khoảng thời gian (từ – đến)
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-gray-500">
+                Loại giao dịch
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setTypeFilter("all")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    typeFilter === "all"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Tất cả
+                </button>
+                <button
+                  onClick={() => setTypeFilter("expense")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    typeFilter === "expense"
+                      ? "bg-red-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Ghi nợ
+                </button>
+                <button
+                  onClick={() => setTypeFilter("refund")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    typeFilter === "refund"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Ghi có
+                </button>
+              </div>
             </div>
           </div>
 
-          {filterType === "week" ? (
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                onClick={() => handleWeekChange("prev")}
-                className="rounded-lg p-2 hover:bg-gray-100"
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-gray-500">Category</p>
+              <select
+                value={filterCategoryId}
+                onChange={(e) => setFilterCategoryId(e.target.value)}
+                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <span className="text-base font-medium text-gray-900 sm:text-lg">
-                {format(selectedWeek, "dd/MM/yyyy")}
-              </span>
-              <button
-                onClick={() => handleWeekChange("next")}
-                className="rounded-lg p-2 hover:bg-gray-100"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
+                <option value="all">Tất cả category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : (
-            <div className="mt-4">
-              <p className="text-xs text-gray-600 sm:text-sm">
-                Current statement period:{" "}
-                {format(
-                  new Date(
-                    selectedMonth.getFullYear(),
-                    selectedMonth.getMonth() -
-                      (new Date().getDate() < selectedStatementDate! ? 1 : 0),
-                    selectedStatementDate!,
-                  ),
-                  "dd/MM/yyyy",
-                )}{" "}
-                - {format(new Date(), "dd/MM/yyyy")}
+
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-gray-500">
+                Khoảng tiền (min – max)
               </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Next statement closing date:{" "}
-                {format(
-                  new Date(
-                    selectedMonth.getFullYear(),
-                    selectedMonth.getMonth() +
-                      (new Date().getDate() >= selectedStatementDate! ? 1 : 0),
-                    selectedStatementDate!,
-                  ),
-                  "dd/MM/yyyy",
-                )}
-              </p>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Từ"
+                  value={minAmount}
+                  onChange={(e) => setMinAmount(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Đến"
+                  value={maxAmount}
+                  onChange={(e) => setMaxAmount(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
             </div>
-          )}
+
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-gray-500">
+                Merchant / Nội dung
+              </p>
+              <input
+                type="text"
+                placeholder="Lọc theo merchant"
+                value={merchantSearch}
+                onChange={(e) => setMerchantSearch(e.target.value)}
+                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Tìm kiếm toàn bộ giao dịch theo tên merchant hoặc category"
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setDateFrom("");
+                setDateTo("");
+                setFilterCategoryId("all");
+                setMinAmount("");
+                setMaxAmount("");
+                setMerchantSearch("");
+                setTypeFilter("all");
+                setGlobalSearch("");
+              }}
+              className="mt-2 inline-flex items-center justify-center rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:text-sm"
+            >
+              Xoá bộ lọc
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3 sm:space-y-4">

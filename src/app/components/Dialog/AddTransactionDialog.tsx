@@ -62,7 +62,10 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
           throw new Error("Failed to fetch cashback policies");
         }
         const policiesData = await policiesResponse.json();
-        setCashbackPolicies(policiesData);
+        const normalizedPolicies = Array.isArray(policiesData)
+          ? policiesData
+          : policiesData?.policies ?? [];
+        setCashbackPolicies(normalizedPolicies);
       } catch (err) {
         console.error("Error fetching data:", err);
       }
@@ -127,9 +130,15 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     }));
   };
 
-  // Calculate cashback for the selected category
   const calculateCashback = () => {
-    if (!formData.categoryId || !formData.amount) return null;
+    if (
+      !formData.categoryId ||
+      !formData.amount ||
+      !Array.isArray(cashbackPolicies) ||
+      cashbackPolicies.length === 0
+    ) {
+      return null;
+    }
 
     const policy = cashbackPolicies.find(
       (p) => p.categoryId === formData.categoryId,
@@ -170,7 +179,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             htmlFor="type"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Transaction Type
+            Loại giao dịch
           </label>
           <select
             id="type"
@@ -179,8 +188,8 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             onChange={handleChange}
             className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 transition-shadow focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
-            <option value="expense">Expense (Chi tiêu)</option>
-            <option value="refund">Refund (Hoàn trả)</option>
+            <option value="expense">Ghi nợ (chi tiêu)</option>
+            <option value="refund">Ghi có (hoàn / trả lại)</option>
           </select>
         </div>
 

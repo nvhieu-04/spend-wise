@@ -32,12 +32,20 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-4 sm:flex">
             {session && (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
+                >
+                  Dashboard
+                </Link>
               <Link
                 href="/qr"
                 className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
               >
                 QR Payment
-              </Link>
+                </Link>
+              </>
             )}
             {session ? (
               <>
@@ -94,6 +102,13 @@ const Header = () => {
             <div className="flex flex-col space-y-2">
               {session ? (
                 <>
+                  <Link
+                    href="/dashboard"
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
                   <Link
                     href="/qr"
                     className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"

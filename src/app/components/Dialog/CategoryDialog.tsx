@@ -51,14 +51,14 @@ const CategoryDialog: React.FC<CategoryDialogProps> = ({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error ?? "Failed to save category");
+        setError(data.error ?? "Failed to save category");
+        return;
       }
 
       onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Error saving category:", error);
-      setError(error instanceof Error ? error.message : "An error occurred");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
