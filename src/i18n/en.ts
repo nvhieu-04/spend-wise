@@ -13,6 +13,17 @@ export const en = {
     optimizerTitle: "Cashback Optimizer",
     optimizerDescription:
       "Enter amount and transaction info to find the best card for cashback.",
+    optimizerAmountLabel: "Transaction amount",
+    optimizerAmountPlaceholder: "0",
+    optimizerMerchantLabel: "Merchant (optional)",
+    optimizerMerchantPlaceholder: "e.g. Amazon, Starbucks...",
+    optimizerSubmit: "Find best card",
+    optimizerSubmitting: "Calculating...",
+    optimizerBestBadge: "Best suggestion",
+    optimizerBestLinePrefix: "Estimated cashback:",
+    optimizerEmptyState:
+      'Enter transaction details and click "Find best card" to see suggestions.',
+    optimizerAlternativesTitle: "Other cards with good cashback",
     analyticsTitle: "Cashback Analytics",
     analyticsDescription:
       "Overview of cashback earned per card and over time.",

@@ -13,6 +13,17 @@ export const vn = {
     optimizerTitle: "Cashback Optimizer",
     optimizerDescription:
       "Nhập số tiền và thông tin giao dịch để gợi ý thẻ có hoàn tiền tốt nhất.",
+    optimizerAmountLabel: "Số tiền giao dịch",
+    optimizerAmountPlaceholder: "0",
+    optimizerMerchantLabel: "Merchant (tuỳ chọn)",
+    optimizerMerchantPlaceholder: "VD: Shopee, Grab, Highlands...",
+    optimizerSubmit: "Tìm thẻ tốt nhất",
+    optimizerSubmitting: "Đang tính...",
+    optimizerBestBadge: "Đề xuất tốt nhất",
+    optimizerBestLinePrefix: "Ước tính hoàn tiền:",
+    optimizerEmptyState:
+      'Nhập thông tin giao dịch và bấm "Tìm thẻ tốt nhất" để xem gợi ý.',
+    optimizerAlternativesTitle: "Các thẻ khác có hoàn tiền tốt",
     analyticsTitle: "Thống kê cashback",
     analyticsDescription:
       "Tổng quan số tiền hoàn lại theo từng thẻ và theo thời gian.",
