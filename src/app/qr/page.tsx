@@ -1,6 +1,8 @@
- "use client";
+"use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { getDictionary, type Locale } from "~/i18n";
 
 interface Bank {
   short_name: string;
@@ -18,6 +20,13 @@ export default function QrPage() {
   const [error, setError] = useState<string | null>(null);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
+  const pathname = usePathname();
+
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+  const backHref = locale === "en" || locale === "vn" ? `/${locale}` : "/";
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -48,7 +57,7 @@ export default function QrPage() {
     setError(null);
     setQrDataURL(null);
     if (!accountNo || !accountName || !acqId) {
-      setError("Vui lòng nhập đủ Số tài khoản, Tên tài khoản và chọn Ngân hàng.");
+      setError(dict.qr.errorMissingFields);
       return;
     }
     setIsLoading(true);
@@ -70,12 +79,12 @@ export default function QrPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Không thể tạo mã QR");
+        setError(data.error || dict.qr.errorCreateFailed);
         return;
       }
       setQrDataURL(data.qrDataURL || null);
     } catch (err) {
-      setError("Có lỗi xảy ra khi gọi VietQR");
+      setError(dict.qr.errorApi);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +95,7 @@ export default function QrPage() {
       <div className="mx-auto w-full max-w-3xl">
         <div className="mb-4">
           <Link
-            href="/"
+            href={backHref}
             className="inline-flex items-center text-sm text-gray-600 transition-colors hover:text-blue-600"
           >
             <svg
@@ -102,16 +111,16 @@ export default function QrPage() {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Back to Cards
+            {dict.common.backToCards}
           </Link>
         </div>
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            QR Payment
+            {dict.qr.title}
           </h1>
           <p className="mt-2 text-sm text-gray-600 sm:text-base">
-            Tạo mã VietQR để nhận chuyển khoản nhanh. Nhập thông tin tài khoản, số tiền và nội dung.
+            {dict.qr.description}
           </p>
         </div>
 
@@ -125,7 +134,7 @@ export default function QrPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Ngân hàng
+                {dict.qr.bankLabel}
               </label>
               <select
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -135,8 +144,8 @@ export default function QrPage() {
               >
                 <option value="">
                   {isLoadingBanks
-                    ? "Đang tải danh sách ngân hàng..."
-                    : "Chọn ngân hàng (hoặc tự nhập BIN bên dưới)"}
+                    ? dict.qr.bankPlaceholderLoading
+                    : dict.qr.bankPlaceholder}
                 </option>
                 {banks.map((bank) => (
                   <option key={bank.bin} value={bank.bin}>
@@ -147,7 +156,7 @@ export default function QrPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Số tài khoản
+                {dict.qr.accountNumberLabel}
               </label>
               <input
                 type="text"
@@ -156,24 +165,24 @@ export default function QrPage() {
                 onChange={(e) =>
                   setAccountNo(e.target.value.replace(/[^\d]/g, ""))
                 }
-                placeholder="Nhập số tài khoản nhận tiền"
+                placeholder={dict.qr.accountNumberPlaceholder}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Tên tài khoản (in hoa, không dấu)
+                {dict.qr.accountNameLabel}
               </label>
               <input
                 type="text"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value.toUpperCase())}
-                placeholder="NGUYEN VAN A"
+                placeholder={dict.qr.accountNamePlaceholder}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Số tiền (VNĐ) - có thể bỏ trống
+                {dict.qr.amountLabel}
               </label>
               <input
                 type="text"
@@ -182,19 +191,19 @@ export default function QrPage() {
                 onChange={(e) =>
                   setAmount(e.target.value.replace(/[^\d]/g, ""))
                 }
-                placeholder="Ví dụ: 100000"
+                placeholder={dict.qr.amountPlaceholder}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Nội dung chuyển khoản (tối đa 25 ký tự, không dấu)
+                {dict.qr.addInfoLabel}
               </label>
               <input
                 type="text"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={addInfo}
                 onChange={(e) => setAddInfo(e.target.value)}
-                placeholder="Noi dung chuyen tien"
+                placeholder={dict.qr.addInfoPlaceholder}
                 maxLength={25}
               />
             </div>
@@ -203,7 +212,7 @@ export default function QrPage() {
               disabled={isLoading}
               className="mt-2 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60"
             >
-              {isLoading ? "Đang tạo QR..." : "Tạo mã QR"}
+                {isLoading ? dict.qr.submitCreating : dict.qr.submit}
             </button>
           </form>
           <div className="flex flex-col items-center justify-center space-y-3">
@@ -219,12 +228,12 @@ export default function QrPage() {
                   download="vietqr.png"
                   className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:text-sm"
                 >
-                  Lưu ảnh QR
+                  {dict.qr.saveQr}
                 </a>
               </>
             ) : (
               <div className="flex h-52 w-52 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 text-center text-xs text-gray-500 sm:h-60 sm:w-60 sm:text-sm">
-                QR preview will appear here
+                  {dict.qr.qrPreviewPlaceholder}
               </div>
             )}
           </div>

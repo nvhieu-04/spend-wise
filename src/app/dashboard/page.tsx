@@ -4,6 +4,7 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Bar,
   BarChart,
@@ -20,6 +21,7 @@ import {
   Cell,
 } from "recharts";
 import { formatNumberWithDots } from "~/lib/utils";
+import { getDictionary, type Locale } from "~/i18n";
 
 interface SpendingByMonthItem {
   month: string;
@@ -70,6 +72,14 @@ export default function DashboardPage() {
   const [overview, setOverview] = useState<OverviewResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+  const manageCardsHref =
+    locale === "en" || locale === "vn" ? `/${locale}` : "/";
 
   useEffect(() => {
     if (status !== "authenticated") {
@@ -128,16 +138,16 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-white px-4 py-6 text-gray-900 sm:px-6 sm:py-8">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            Dashboard tổng quan
+            {dict.dashboard.notLoggedInTitle}
           </h1>
           <p className="mt-3 text-sm text-gray-600 sm:text-base">
-            Vui lòng đăng nhập để xem thống kê chi tiêu và hoàn tiền của bạn.
+            {dict.dashboard.notLoggedInDescription}
           </p>
           <Link
             href="/api/auth/signin"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
           >
-            Sign In
+            {dict.common.signIn}
           </Link>
         </div>
       </div>
@@ -149,7 +159,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-white px-4 py-6 text-gray-900 sm:px-6 sm:py-8">
         <div className="mx-auto max-w-3xl">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            Dashboard tổng quan
+              {dict.dashboard.title}
           </h1>
           <p className="mt-3 text-sm text-red-600 sm:text-base">{error}</p>
         </div>
@@ -207,24 +217,24 @@ export default function DashboardPage() {
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-              Dashboard tổng quan
+              {dict.dashboard.title}
             </h1>
             <p className="mt-1 text-sm text-gray-600 sm:text-base">
-              Tổng quan chi tiêu, hoàn tiền và phân bổ theo thẻ, category.
+              {dict.dashboard.description}
             </p>
           </div>
           <Link
-            href="/"
+            href={manageCardsHref}
             className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:text-sm"
           >
-            Quản lý thẻ
+            {dict.dashboard.manageCards}
           </Link>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Tổng chi tiêu năm nay
+              {dict.dashboard.totalSpendingYear}
             </p>
             <p className="mt-2 text-2xl font-semibold text-gray-900">
               {formatNumberWithDots(Math.round(overview.totalSpending))} VND
@@ -232,7 +242,7 @@ export default function DashboardPage() {
           </div>
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Tổng cashback nhận được
+              {dict.dashboard.totalCashback}
             </p>
             <p className="mt-2 text-2xl font-semibold text-emerald-600">
               {formatNumberWithDots(Math.round(overview.totalCashback))} VND
@@ -240,7 +250,7 @@ export default function DashboardPage() {
           </div>
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Số lượng giao dịch
+              {dict.dashboard.totalTransactions}
             </p>
             <p className="mt-2 text-2xl font-semibold text-gray-900">
               {formatNumberWithDots(overview.totalTransactions)}
@@ -252,9 +262,11 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-900">
-                Chi tiêu theo tháng (tất cả thẻ)
+                {dict.dashboard.spendingByMonthTitle}
               </p>
-              <p className="text-xs text-gray-500">Đơn vị: VND</p>
+              <p className="text-xs text-gray-500">
+                {dict.dashboard.spendingByMonthUnit}
+              </p>
             </div>
             <div className="h-64 w-full sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -280,7 +292,7 @@ export default function DashboardPage() {
                   <Line
                     type="monotone"
                     dataKey="totalSpending"
-                    name="Chi tiêu"
+                    name={dict.dashboard.spendingLabel}
                     stroke="#3B82F6"
                     strokeWidth={2}
                     dot={{ r: 3 }}
@@ -294,9 +306,11 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-900">
-                Chi tiêu theo thẻ
+                {dict.dashboard.spendingByCardTitle}
               </p>
-              <p className="text-xs text-gray-500">Top thẻ chi nhiều nhất</p>
+              <p className="text-xs text-gray-500">
+                {dict.dashboard.spendingByCardSubtitle}
+              </p>
             </div>
             <div className="h-64 w-full sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -322,7 +336,7 @@ export default function DashboardPage() {
                   />
                   <Bar
                     dataKey="totalSpending"
-                    name="Chi tiêu"
+                    name={dict.dashboard.spendingLabel}
                     fill="#6366F1"
                     radius={[4, 4, 4, 4]}
                   />
@@ -336,16 +350,16 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-900">
-                Phân bổ chi tiêu theo category
+                {dict.dashboard.categoryAllocationTitle}
               </p>
               <p className="text-xs text-gray-500">
-                Top category chi nhiều nhất
+                {dict.dashboard.categoryAllocationSubtitle}
               </p>
             </div>
             <div className="h-64 w-full sm:h-72">
               {topCategoryData.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-sm text-gray-500">
-                  Chưa có dữ liệu category.
+                  {dict.dashboard.noCategoryData}
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -384,16 +398,16 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-900">
-                Top thương hiệu / merchant
+                {dict.dashboard.topMerchantsTitle}
               </p>
               <p className="text-xs text-gray-500">
-                Nơi bạn chi tiêu nhiều nhất
+                {dict.dashboard.topMerchantsSubtitle}
               </p>
             </div>
             <div className="space-y-3">
               {topMerchantsData.length === 0 ? (
                 <p className="text-sm text-gray-500">
-                  Chưa có dữ liệu giao dịch.
+                  {dict.dashboard.noMerchantData}
                 </p>
               ) : (
                 topMerchantsData.map((merchant) => (

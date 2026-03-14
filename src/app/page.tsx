@@ -2,11 +2,13 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import BankCard from "./components/BankCard";
 import AddBankCardDialog from "./components/Dialog/AddBankCardDialog";
 import PaymentNotification from "./components/PaymentNotification";
+import { getDictionary, type Locale } from "~/i18n";
 interface BankCard {
   id: string;
   cardName: string;
@@ -23,6 +25,12 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
+  const pathname = usePathname();
+
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
 
   const fetchCards = async () => {
     try {
@@ -67,45 +75,48 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              <span className="block text-gray-900">Manage Your</span>
-              <span className="block text-blue-600">Bank Cards</span>
+              <span className="block text-gray-900">
+                {dict.home.heroTitleLine1}
+              </span>
+              <span className="block text-blue-600">
+                {dict.home.heroTitleLine2}
+              </span>
             </h1>
             <p className="mx-auto mt-3 max-w-md text-base text-gray-500 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
-              Track your credit cards, monitor spending, and maximize your
-              rewards in one place.
+              {dict.home.heroDescription}
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:mt-10 sm:flex-row">
               <Link
                 href="api/auth/signin"
                 className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-blue-700"
               >
-                Sign In
+                {dict.home.heroCta}
               </Link>
             </div>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-6 sm:mt-16 sm:grid-cols-2 sm:gap-8 lg:mt-20 lg:grid-cols-3">
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
               <h3 className="mb-4 text-xl font-semibold text-gray-900">
-                Track Spending
+                {dict.home.featureTrackTitle}
               </h3>
               <p className="text-gray-600">
-                Monitor your expenses and stay within your budget.
+                {dict.home.featureTrackDescription}
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
               <h3 className="mb-4 text-xl font-semibold text-gray-900">
-                Maximize Rewards
+                {dict.home.featureRewardsTitle}
               </h3>
               <p className="text-gray-600">
-                Get the most out of your credit card rewards and cashback.
+                {dict.home.featureRewardsDescription}
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg">
               <h3 className="mb-4 text-xl font-semibold text-gray-900">
-                Stay Organized
+                {dict.home.featureOrganizeTitle}
               </h3>
               <p className="text-gray-600">
-                Keep all your bank cards in one secure place.
+                {dict.home.featureOrganizeDescription}
               </p>
             </div>
           </div>
@@ -133,7 +144,7 @@ export default function HomePage() {
       <div className="bg-white p-3 text-gray-900 sm:p-6 md:p-8">
         <div className="mx-auto max-w-7xl">
           <h1 className="mb-4 text-center text-2xl font-bold text-gray-900 sm:mb-8 sm:text-left sm:text-3xl">
-            My Bank Cards
+            {dict.home.myBankCardsTitle}
           </h1>
           {isLoading ? (
             <Skeleton count={3} />
@@ -172,10 +183,10 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className="mb-0.5 text-center text-sm font-medium text-gray-900 sm:mb-1 sm:text-base md:text-lg">
-                  Add New Card
+                  {dict.home.addNewCardTitle}
                 </h3>
                 <p className="line-clamp-2 px-1 text-center text-xs text-gray-500 sm:px-2 sm:text-sm">
-                  Click to add another bank card
+                  {dict.home.addNewCardDescription}
                 </p>
               </button>
             </div>

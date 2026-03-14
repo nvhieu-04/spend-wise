@@ -1,5 +1,6 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import { formatNumberWithDots } from "../../lib/utils";
 import DeleteBankCardDialog from "./Dialog/DeleteBankCardDialog";
@@ -34,6 +35,13 @@ const BankCard: React.FC<BankCardProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [autoColor, setAutoColor] = useState<string | undefined>(undefined);
+  const pathname = usePathname();
+
+  const segments = pathname.split("/").filter(Boolean);
+  const maybeLocale = segments[0];
+  const localePrefix =
+    maybeLocale === "en" || maybeLocale === "vn" ? `/${maybeLocale}` : "";
+  const cardHref = isAdd ? "#" : `${localePrefix}/cards/${id}`;
 
   const adjustColor = (hex: string, percent: number) => {
     hex = hex.replace(/^#/, "");
@@ -55,7 +63,7 @@ const BankCard: React.FC<BankCardProps> = ({
 
   return (
     <>
-      <Link className={className} href={isAdd ? "#" : `/cards/${id}`}>
+      <Link className={className} href={cardHref}>
         <div
           className={`relative aspect-[1.6/1] w-full cursor-pointer overflow-hidden rounded-xl transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl`}
           style={

@@ -2,12 +2,40 @@
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import NotificationIcon from "./NotificationIcon";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import NotificationIcon from "./NotificationIcon";
+import { dictionaries, type Locale } from "~/i18n";
+
+function getLocaleFromPath(pathname: string): Locale {
+  const [, maybeLocale] = pathname.split("/");
+  if (maybeLocale === "en" || maybeLocale === "vn") return maybeLocale;
+  return "en";
+}
+
+function buildPathWithLocale(pathname: string, locale: Locale) {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments[0] === "en" || segments[0] === "vn") {
+    segments[0] = locale;
+  } else {
+    segments.unshift(locale);
+  }
+  return `/${segments.join("/")}`;
+}
 
 const Header = () => {
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const locale = getLocaleFromPath(pathname);
+  const dict = dictionaries[locale];
+  const otherLocale: Locale = locale === "en" ? "vn" : "en";
+  const switchHref = buildPathWithLocale(pathname, otherLocale);
+
+  const dashboardHref = buildPathWithLocale("/dashboard", locale);
+  const qrHref = buildPathWithLocale("/qr", locale);
+  const homeHref = buildPathWithLocale("/", locale);
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
@@ -22,28 +50,27 @@ const Header = () => {
               className="h-6 w-6 rounded-full sm:h-8 sm:w-8"
             />
             <Link
-              href="/"
+              href={homeHref}
               className="text-lg font-bold text-[#3A8DFF] transition-colors hover:text-[#1D6FEA] sm:text-xl"
             >
-              SpendWise
+              {dict.header.appName}
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-4 sm:flex">
             {session && (
               <>
                 <Link
-                  href="/dashboard"
+                  href={dashboardHref}
                   className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
                 >
-                  Dashboard
+                  {dict.header.dashboard}
                 </Link>
-              <Link
-                href="/qr"
-                className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
-              >
-                QR Payment
+                <Link
+                  href={qrHref}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
+                >
+                  {dict.header.qr}
                 </Link>
               </>
             )}
@@ -54,22 +81,25 @@ const Header = () => {
                   href="api/auth/signout"
                   className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
                 >
-                  Sign Out
+                  {dict.common.signOut}
                 </Link>
               </>
             ) : (
-              <>
-                <Link
-                  href="api/auth/signin"
-                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
-                >
-                  Sign In
-                </Link>
-              </>
+              <Link
+                href="api/auth/signin"
+                className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
+              >
+                {dict.common.signIn}
+              </Link>
             )}
+            <Link
+              href={switchHref}
+              className="rounded-md border px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              {otherLocale.toUpperCase()}
+            </Link>
           </nav>
 
-          {/* Mobile Navigation - Show notification icon and menu button */}
           <div className="flex items-center space-x-2 sm:hidden">
             {session && <NotificationIcon />}
             <button
@@ -96,45 +126,49 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="border-t border-gray-100 py-3 sm:hidden">
             <div className="flex flex-col space-y-2">
               {session ? (
                 <>
                   <Link
-                    href="/dashboard"
+                    href={dashboardHref}
                     className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    {dict.header.dashboard}
                   </Link>
                   <Link
-                    href="/qr"
+                    href={qrHref}
                     className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    QR Payment
+                    {dict.header.qr}
                   </Link>
                   <Link
                     href="api/auth/signout"
                     className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Sign Out
+                    {dict.common.signOut}
                   </Link>
                 </>
               ) : (
-                <>
-                  <Link
-                    href="api/auth/signin"
-                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                </>
+                <Link
+                  href="api/auth/signin"
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {dict.common.signIn}
+                </Link>
               )}
+              <Link
+                href={switchHref}
+                className="mt-1 inline-flex w-fit items-center rounded-md border px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {otherLocale.toUpperCase()}
+              </Link>
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import Link from "next/link";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import BankCard from "~/app/components/BankCard";
 import CreditLimitBar from "~/app/components/CreditLimitBar";
@@ -10,6 +10,7 @@ import AddTransactionDialog from "~/app/components/Dialog/AddTransactionDialog";
 import CashbackPolicyDialog from "~/app/components/Dialog/CashbackPolicyDialog";
 import CategoryDialog from "~/app/components/Dialog/CategoryDialog";
 import EditCardColorDialog from "~/app/components/Dialog/EditCardColorDialog";
+import { getDictionary, type Locale } from "~/i18n";
 import { formatNumberWithDots } from "~/lib/utils";
 import EditTransactionDialog from "../../components/Dialog/EditTransactionDialog";
 
@@ -66,6 +67,12 @@ interface TransactionsResponse {
 export default function CardDetailPage() {
   const params = useParams();
   const cardId = params.id as string;
+  const pathname = usePathname();
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+  const backHref = locale === "en" || locale === "vn" ? `/${locale}` : "/";
   const [card, setCard] = useState<CardDetails | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalCashback, setTotalCashback] = useState(0);
@@ -114,10 +121,10 @@ export default function CardDetailPage() {
       ]);
 
       if (!cardResponse.ok) {
-        throw new Error("Failed to fetch card details");
+        throw new Error(dict.cards.fetchCardError);
       }
       if (!transactionsResponse.ok) {
-        throw new Error("Failed to fetch transactions");
+        throw new Error(dict.cards.fetchTransactionsError);
       }
 
       const cardData = await cardResponse.json();
@@ -133,7 +140,7 @@ export default function CardDetailPage() {
       }
     } catch (err) {
       console.error("Error fetching data:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : dict.cards.fetchCardError);
     } finally {
       setIsLoading(false);
     }
@@ -196,8 +203,7 @@ export default function CardDetailPage() {
     if (dateFrom) {
       const from = new Date(dateFrom);
       filtered = filtered.filter(
-        (transaction) =>
-          new Date(transaction.transactionDate) >= from,
+        (transaction) => new Date(transaction.transactionDate) >= from,
       );
     }
 
@@ -229,9 +235,7 @@ export default function CardDetailPage() {
     if (merchantSearch.trim()) {
       const term = merchantSearch.trim().toLowerCase();
       filtered = filtered.filter((transaction) =>
-        transaction.merchantName
-          ?.toLowerCase()
-          .includes(term),
+        transaction.merchantName?.toLowerCase().includes(term),
       );
     }
 
@@ -245,13 +249,8 @@ export default function CardDetailPage() {
       const term = globalSearch.trim().toLowerCase();
       filtered = filtered.filter((transaction) => {
         const merchant = transaction.merchantName?.toLowerCase() ?? "";
-        const categoryName = transaction.category?.name
-          ?.toLowerCase()
-          ?? "";
-        return (
-          merchant.includes(term) ||
-          categoryName.includes(term)
-        );
+        const categoryName = transaction.category?.name?.toLowerCase() ?? "";
+        return merchant.includes(term) || categoryName.includes(term);
       });
     }
 
@@ -283,13 +282,17 @@ export default function CardDetailPage() {
       try {
         const response = await fetch(`/api/bank-cards/${cardId}/transactions`);
         if (!response.ok) {
-          throw new Error("Failed to fetch transactions");
+          throw new Error(dict.cards.fetchTransactionsError);
         }
         const data: TransactionsResponse = await response.json();
         setTransactions(data.transactions);
         setTotalCashback(data.totalCashback);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(
+          err instanceof Error
+            ? err.message
+            : dict.cards.fetchTransactionsError,
+        );
       }
     };
     fetchTransactions();
@@ -299,13 +302,13 @@ export default function CardDetailPage() {
     try {
       const response = await fetch(`/api/categories?cardId=${cardId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch categories");
+        throw new Error(dict.cards.fetchCategoriesError);
       }
       const data = await response.json();
       setCategories(data);
     } catch (err) {
       console.error("Error fetching categories:", err);
-      setError("Failed to load categories");
+      setError(dict.cards.fetchCategoriesError);
     }
   };
 
@@ -320,7 +323,7 @@ export default function CardDetailPage() {
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm(dict.cards.deleteCategoryConfirm)) return;
 
     setIsDeleting(true);
     try {
@@ -330,7 +333,7 @@ export default function CardDetailPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error ?? "Failed to delete category");
+        throw new Error(data.error ?? dict.cards.deleteCategoryError);
       }
 
       setCategories(categories.filter((c) => c.id !== categoryId));
@@ -338,7 +341,7 @@ export default function CardDetailPage() {
     } catch (err) {
       console.error("Error deleting category:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to delete category",
+        err instanceof Error ? err.message : dict.cards.deleteCategoryError,
       );
     } finally {
       setIsDeleting(false);
@@ -357,7 +360,7 @@ export default function CardDetailPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete policy");
+        throw new Error(dict.cards.deletePolicyError);
       }
 
       if (card) {
@@ -370,12 +373,14 @@ export default function CardDetailPage() {
       }
     } catch (err) {
       console.error("Error deleting policy:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(
+        err instanceof Error ? err.message : dict.cards.deletePolicyError,
+      );
     }
   };
 
   const handleDeleteTransaction = async (transactionId: string) => {
-    if (!confirm("Are you sure you want to delete this transaction?")) return;
+    if (!confirm(dict.cards.deleteTransactionConfirm)) return;
 
     try {
       const response = await fetch(`/api/transactions/${transactionId}`, {
@@ -383,14 +388,18 @@ export default function CardDetailPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete transaction");
+        throw new Error(dict.cards.deleteTransactionError);
       }
 
       // Refresh transactions
       fetchTransactions();
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(
+        error instanceof Error
+          ? error.message
+          : dict.cards.deleteTransactionError,
+      );
     }
   };
 
@@ -409,7 +418,7 @@ export default function CardDetailPage() {
       }
       const response = await fetch(url.toString());
       if (!response.ok) {
-        throw new Error("Failed to fetch transactions");
+        throw new Error(dict.cards.fetchTransactionsError);
       }
       const data: TransactionsResponse = await response.json();
       setTransactions(data.transactions);
@@ -417,7 +426,11 @@ export default function CardDetailPage() {
       setFilteredTransactions(data.transactions);
     } catch (error) {
       console.error("Error fetching transactions:", error);
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(
+        error instanceof Error
+          ? error.message
+          : dict.cards.fetchTransactionsError,
+      );
     }
   };
 
@@ -472,14 +485,14 @@ export default function CardDetailPage() {
         <div className="mx-auto max-w-4xl">
           <div className="py-8 text-center sm:py-12">
             <h2 className="mb-4 text-2xl font-semibold">
-              Error Loading Card Details
+              {dict.cards.errorLoadingTitle}
             </h2>
             <p className="text-red-600">{error}</p>
             <Link
-              href="/"
+              href={backHref}
               className="mt-4 inline-block text-blue-600 hover:text-blue-700"
             >
-              ← Back to Cards
+              ← {dict.common.backToCards}
             </Link>
           </div>
         </div>
@@ -492,9 +505,11 @@ export default function CardDetailPage() {
       <div className="min-h-screen bg-white p-4 sm:p-6">
         <div className="mx-auto max-w-4xl">
           <div className="py-8 text-center sm:py-12">
-            <h2 className="mb-4 text-2xl font-semibold">Card Not Found</h2>
-            <Link href="/" className="text-blue-600 hover:text-blue-700">
-              ← Back to Cards
+            <h2 className="mb-4 text-2xl font-semibold">
+              {dict.cards.notFoundTitle}
+            </h2>
+            <Link href={backHref} className="text-blue-600 hover:text-blue-700">
+              ← {dict.common.backToCards}
             </Link>
           </div>
         </div>
@@ -508,7 +523,7 @@ export default function CardDetailPage() {
         {/* Back button positioned at top left */}
         <div className="mb-4">
           <Link
-            href="/"
+            href={backHref}
             className="inline-flex items-center text-sm text-gray-600 transition-colors hover:text-blue-600"
           >
             <svg
@@ -524,7 +539,7 @@ export default function CardDetailPage() {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Back to Cards
+            {dict.common.backToCards}
           </Link>
         </div>
 
@@ -533,12 +548,13 @@ export default function CardDetailPage() {
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Card Details
+                {dict.cards.headerTitle}
               </h1>
               {card.statementClosingDate && card.paymentDueDate && (
                 <p className="mt-1 text-sm text-gray-600">
-                  Statement closes on day {card.statementClosingDate}, payment
-                  due on day {card.paymentDueDate} each month.
+                  {dict.cards.statementInfoPrefix} {card.statementClosingDate},{" "}
+                  {dict.cards.statementInfoSuffix} {card.paymentDueDate}{" "}
+                  {dict.cards.statementInfoTail}
                 </p>
               )}
             </div>
@@ -568,20 +584,26 @@ export default function CardDetailPage() {
                   if (daysUntilPayment <= 0) {
                     return (
                       <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
-                        Payment due now
+                        {dict.cards.paymentDueNow}
                       </span>
                     );
                   }
                   if (daysUntilPayment <= 5) {
                     return (
                       <span className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700">
-                        Payment due in {daysUntilPayment} days
+                        {dict.cards.paymentDueInDays.replace(
+                          "{days}",
+                          String(daysUntilPayment),
+                        )}
                       </span>
                     );
                   }
                   return (
                     <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                      Next payment in {daysUntilPayment} days
+                      {dict.cards.nextPaymentInDays.replace(
+                        "{days}",
+                        String(daysUntilPayment),
+                      )}
                     </span>
                   );
                 })()}
@@ -614,26 +636,28 @@ export default function CardDetailPage() {
               {card.statementClosingDate && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
-                    Statement Closing Date
+                    {dict.cards.statementClosingTitle}
                   </h3>
                   <p className="mt-1 text-base text-gray-900 sm:text-lg">
-                    Day {card.statementClosingDate} of each month
+                    {dict.cards.statementClosingValuePrefix}{" "}
+                    {card.statementClosingDate} {dict.cards.statementInfoTail}
                   </p>
                 </div>
               )}
               {card.paymentDueDate && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
-                    Payment Due Date
+                    {dict.cards.paymentDueTitle}
                   </h3>
                   <p className="mt-1 text-base text-gray-900 sm:text-lg">
-                    Day {card.paymentDueDate} of each month
+                    {dict.cards.paymentDueValuePrefix} {card.paymentDueDate}{" "}
+                    {dict.cards.statementInfoTail}
                   </p>
                 </div>
               )}
               <div>
                 <h3 className="text-sm font-medium text-gray-500">
-                  Card Color
+                  {dict.cards.cardColorTitle}
                 </h3>
                 <div className="mt-1 flex items-center space-x-2">
                   <div
@@ -644,14 +668,14 @@ export default function CardDetailPage() {
                     onClick={() => setIsEditColorDialogOpen(true)}
                     className="text-sm text-blue-600 hover:text-blue-700"
                   >
-                    Change Color
+                    {dict.cards.changeColor}
                   </button>
                 </div>
               </div>
               {card.creditLimit && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
-                    Credit Limit
+                    {dict.cards.creditLimitTitle}
                   </h3>
                   <p className="mt-1 text-base text-gray-900 sm:text-lg">
                     {card.creditLimit.toLocaleString()}VNĐ
@@ -673,31 +697,28 @@ export default function CardDetailPage() {
                         : 0;
                     let badgeClass =
                       "bg-emerald-50 text-emerald-700 border-emerald-100";
-                    let label = "Usage under control";
+                    let label = dict.cards.usageUnderControl;
                     if (usage >= 80) {
-                      badgeClass =
-                        "bg-red-50 text-red-700 border-red-100";
-                      label = "High utilization";
+                      badgeClass = "bg-red-50 text-red-700 border-red-100";
+                      label = dict.cards.usageHigh;
                     } else if (usage >= 50) {
                       badgeClass =
                         "bg-orange-50 text-orange-700 border-orange-100";
-                      label = "Medium utilization";
+                      label = dict.cards.usageMedium;
                     }
                     return (
                       <>
                         <span className="text-gray-600">
-                          Remaining to repay:{" "}
+                          {dict.cards.remainingToRepayLabel}{" "}
                           <span className="font-semibold text-gray-900">
-                            {formatNumberWithDots(
-                              Math.round(remainingDue),
-                            )}{" "}
-                            VNĐ
+                            {formatNumberWithDots(Math.round(remainingDue))} VNĐ
                           </span>
                         </span>
                         <span
                           className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass}`}
                         >
-                          {label} • {usage.toFixed(0)}% limit used
+                          {label} • {usage.toFixed(0)}
+                          {dict.cards.usageSuffix}
                         </span>
                       </>
                     );
@@ -713,14 +734,14 @@ export default function CardDetailPage() {
             <div className="mt-4 sm:mt-6">
               <div className="mb-4 flex flex-col sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="mb-2 text-lg font-semibold text-gray-900 sm:mb-0 sm:text-xl">
-                  Categories
+                  {dict.cards.categoriesTitle}
                 </h2>
                 <button
                   onClick={handleAddCategory}
                   className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
                   <PlusIcon className="mr-2 h-5 w-5" />
-                  Add Category
+                  {dict.cards.addCategoryButton}
                 </button>
               </div>
 
@@ -728,8 +749,7 @@ export default function CardDetailPage() {
                 <div className="divide-y divide-gray-100">
                   {categories.length === 0 ? (
                     <div className="p-4 text-center text-gray-500 sm:p-6">
-                      No categories found. Click &quot;Add Category&quot; to
-                      create one.
+                      {dict.cards.noCategoriesMessage}
                     </div>
                   ) : (
                     categories.map((category) => {
@@ -774,14 +794,14 @@ export default function CardDetailPage() {
               <div className="mt-4 sm:mt-6">
                 <div className="mb-3 flex flex-col sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
                   <h2 className="mb-2 text-lg font-semibold text-gray-900 sm:mb-0">
-                    Cashback Policies
+                    {dict.cards.cashbackPoliciesTitle}
                   </h2>
                   <button
                     onClick={() => setIsAddPolicyDialogOpen(true)}
                     className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                   >
                     <PlusIcon className="mr-2 h-5 w-5" />
-                    Add Policy
+                    {dict.cards.addPolicyButton}
                   </button>
                 </div>
                 {error && (
@@ -792,8 +812,7 @@ export default function CardDetailPage() {
                 <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
                   {card.cashbackPolicies.length === 0 ? (
                     <div className="p-3 text-center text-gray-500 sm:p-4">
-                      No cashback policies found. Click &quot;Add Policy&quot;
-                      to create one.
+                      {dict.cards.noPoliciesMessage}
                     </div>
                   ) : (
                     card.cashbackPolicies
@@ -808,10 +827,11 @@ export default function CardDetailPage() {
                               {policy.category?.name}
                             </h3>
                             <p className="mt-1 text-xs text-blue-600 sm:text-sm">
-                              Cashback: {policy.cashbackPercentage}%
+                              {dict.cards.cashbackLabel}{" "}
+                              {policy.cashbackPercentage}%
                               <span className="text-gray-500">
                                 {policy.maxCashback &&
-                                  ` (max ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
+                                  ` (${dict.cards.cashbackMaxPrefix} ${formatNumberWithDots(policy.maxCashback)} VNĐ)`}
                               </span>
                             </p>
                           </div>
@@ -832,12 +852,12 @@ export default function CardDetailPage() {
 
         <div className="mb-3 flex flex-col sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="mb-2 text-xl font-semibold text-gray-900 sm:mb-0">
-            Transactions
+            {dict.cards.transactionsTitle}
           </h2>
           <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <div className="text-left sm:text-right">
               <p className="text-xs text-gray-500 sm:text-sm">
-                Cashback for filtered period
+                {dict.cards.cashbackPeriodLabel}
               </p>
               <p className="text-base font-semibold text-green-600 sm:text-lg">
                 {formatNumberWithDots(totalCashback)} VNĐ
@@ -848,7 +868,7 @@ export default function CardDetailPage() {
               className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
             >
               <PlusIcon className="mr-2 h-5 w-5" />
-              Add Transaction
+              {dict.cards.addTransactionButton}
             </button>
           </div>
         </div>
@@ -857,7 +877,7 @@ export default function CardDetailPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
               <p className="text-xs font-medium text-gray-500">
-                Kỳ lọc thời gian
+                {dict.cards.filterPeriodTitle}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -868,7 +888,7 @@ export default function CardDetailPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Tuần này
+                  {dict.cards.filterPeriodWeek}
                 </button>
                 <button
                   onClick={() => setFilterType("statement")}
@@ -878,7 +898,7 @@ export default function CardDetailPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Kỳ sao kê
+                  {dict.cards.filterPeriodStatement}
                 </button>
               </div>
               {filterType === "week" ? (
@@ -927,7 +947,7 @@ export default function CardDetailPage() {
                 selectedStatementDate && (
                   <div className="mt-1 rounded-lg bg-gray-50 px-2 py-1.5 text-xs text-gray-600">
                     <p>
-                      Kỳ sao kê hiện tại: từ{" "}
+                      {dict.cards.currentStatementPrefix}{" "}
                       {format(
                         new Date(
                           selectedMonth.getFullYear(),
@@ -939,7 +959,8 @@ export default function CardDetailPage() {
                         ),
                         "dd/MM/yyyy",
                       )}{" "}
-                      đến {format(new Date(), "dd/MM/yyyy")}
+                      {dict.cards.currentStatementTo}{" "}
+                      {format(new Date(), "dd/MM/yyyy")}
                     </p>
                   </div>
                 )
@@ -948,27 +969,27 @@ export default function CardDetailPage() {
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-gray-500">
-                Khoảng thời gian (từ – đến)
+                {dict.cards.dateRangeTitle}
               </p>
               <div className="flex gap-2">
                 <input
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
                 <input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-gray-500">
-                Loại giao dịch
+                {dict.cards.transactionTypeTitle}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -979,7 +1000,7 @@ export default function CardDetailPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Tất cả
+                  {dict.cards.transactionTypeAll}
                 </button>
                 <button
                   onClick={() => setTypeFilter("expense")}
@@ -989,7 +1010,7 @@ export default function CardDetailPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Ghi nợ
+                  {dict.cards.transactionTypeExpense}
                 </button>
                 <button
                   onClick={() => setTypeFilter("refund")}
@@ -999,7 +1020,7 @@ export default function CardDetailPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Ghi có
+                  {dict.cards.transactionTypeRefund}
                 </button>
               </div>
             </div>
@@ -1007,13 +1028,15 @@ export default function CardDetailPage() {
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1.5">
-              <p className="text-xs font-medium text-gray-500">Category</p>
+              <p className="text-xs font-medium text-gray-500">
+                {dict.cards.categoryFilterTitle}
+              </p>
               <select
                 value={filterCategoryId}
                 onChange={(e) => setFilterCategoryId(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               >
-                <option value="all">Tất cả category</option>
+                <option value="all">{dict.cards.categoryFilterAll}</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -1024,38 +1047,38 @@ export default function CardDetailPage() {
 
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-gray-500">
-                Khoảng tiền (min – max)
+                {dict.cards.amountRangeTitle}
               </p>
               <div className="flex gap-2">
                 <input
                   type="number"
                   inputMode="numeric"
-                  placeholder="Từ"
+                  placeholder={dict.cards.amountMinPlaceholder}
                   value={minAmount}
                   onChange={(e) => setMinAmount(e.target.value)}
-                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
                 <input
                   type="number"
                   inputMode="numeric"
-                  placeholder="Đến"
+                  placeholder={dict.cards.amountMaxPlaceholder}
                   value={maxAmount}
                   onChange={(e) => setMaxAmount(e.target.value)}
-                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-gray-500">
-                Merchant / Nội dung
+                {dict.cards.merchantFilterTitle}
               </p>
               <input
                 type="text"
-                placeholder="Lọc theo merchant"
+                placeholder={dict.cards.merchantFilterPlaceholder}
                 value={merchantSearch}
                 onChange={(e) => setMerchantSearch(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
             </div>
           </div>
@@ -1064,10 +1087,10 @@ export default function CardDetailPage() {
             <div className="flex-1">
               <input
                 type="text"
-                placeholder="Tìm kiếm toàn bộ giao dịch theo tên merchant hoặc category"
+                placeholder={dict.cards.globalSearchPlaceholder}
                 value={globalSearch}
                 onChange={(e) => setGlobalSearch(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none sm:text-sm"
               />
             </div>
             <button
@@ -1084,7 +1107,7 @@ export default function CardDetailPage() {
               }}
               className="mt-2 inline-flex items-center justify-center rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:text-sm"
             >
-              Xoá bộ lọc
+              {dict.cards.clearFiltersButton}
             </button>
           </div>
         </div>
@@ -1093,7 +1116,7 @@ export default function CardDetailPage() {
           {filteredTransactions.length === 0 ? (
             <div className="rounded-lg bg-gray-50 py-8 text-center sm:py-12">
               <p className="text-gray-500">
-                No transactions found for the selected period
+                {dict.cards.noTransactionsMessage}
               </p>
             </div>
           ) : (
@@ -1121,13 +1144,13 @@ export default function CardDetailPage() {
                       )}
                     </p>
                     <p className="mt-1 text-xs text-gray-500 sm:mt-0 sm:text-sm">
-                      {transaction.category?.name ?? "Unknown Category"}
+                      {transaction.category?.name ?? dict.cards.unknownCategory}
                     </p>
                   </div>
                   {transaction.cashbackEarned > 0 && (
                     <div className="mt-1">
                       <p className="text-xs text-green-600 sm:text-sm">
-                        Cashback:{" "}
+                        {dict.cards.cashbackLabel}{" "}
                         {formatNumberWithDots(transaction.cashbackEarned)} VNĐ
                       </p>
                     </div>
