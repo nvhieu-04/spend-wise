@@ -77,6 +77,10 @@ export const vn = {
     addNewCardTitle: "Thêm thẻ mới",
     addNewCardDescription: "Nhấn để thêm một thẻ ngân hàng khác",
     errorLoadingCardsTitle: "Lỗi khi tải danh sách thẻ",
+    filterByBankName: "Lọc theo tên ngân hàng",
+    filterCardType: "Loại thẻ / Tổ chức",
+    filterAll: "Tất cả",
+    clearFilters: "Xóa bộ lọc",
   },
   dashboard: {
     title: "Dashboard tổng quan",

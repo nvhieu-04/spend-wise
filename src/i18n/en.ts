@@ -77,6 +77,10 @@ export const en = {
     addNewCardTitle: "Add New Card",
     addNewCardDescription: "Click to add another bank card",
     errorLoadingCardsTitle: "Error Loading Cards",
+    filterByBankName: "Filter by bank name",
+    filterCardType: "Card type",
+    filterAll: "All",
+    clearFilters: "Clear filters",
   },
   dashboard: {
     title: "Overview Dashboard",

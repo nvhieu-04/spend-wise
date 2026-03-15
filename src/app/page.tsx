@@ -1,13 +1,15 @@
 "use client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import BankCard from "./components/BankCard";
 import AddBankCardDialog from "./components/Dialog/AddBankCardDialog";
+import ListBox from "./components/ListBox";
 import PaymentNotification from "./components/PaymentNotification";
+import TextField from "./components/TextField";
 import { getDictionary, type Locale } from "~/i18n";
 interface BankCard {
   id: string;
@@ -19,12 +21,21 @@ interface BankCard {
   cardColor?: string;
 }
 
+const PAGE_SIZE = 20;
+
 export default function HomePage() {
   const { data: session, status } = useSession();
   const [cards, setCards] = useState<BankCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
+  const [filterBankName, setFilterBankName] = useState("");
+  const [filterCardType, setFilterCardType] = useState("");
+  const [filterOptions, setFilterOptions] = useState<{
+    bankNames: string[];
+    cardTypes: string[];
+  }>({ bankNames: [], cardTypes: [] });
+  const isFirstFilterRun = useRef(true);
   const pathname = usePathname();
 
   const [, maybeLocale] = pathname.split("/");
@@ -36,9 +47,14 @@ export default function HomePage() {
       ? `/${locale}/cashback-optimizer`
       : "/cashback-optimizer";
 
-  const fetchCards = async () => {
+  const fetchCards = useCallback(async () => {
     try {
-      const response = await fetch("/api/bank-cards");
+      const params = new URLSearchParams();
+      params.set("page", "1");
+      params.set("pageSize", String(PAGE_SIZE));
+      if (filterBankName.trim()) params.set("bankName", filterBankName.trim());
+      if (filterCardType.trim()) params.set("cardType", filterCardType.trim());
+      const response = await fetch(`/api/bank-cards?${params.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch cards");
       }
@@ -51,19 +67,68 @@ export default function HomePage() {
       setIsLoading(false);
       setError(null);
     }
-  };
+  }, [filterBankName, filterCardType]);
+
+  const fetchFilterOptions = useCallback(async () => {
+    try {
+      const response = await fetch("/api/bank-cards/filters");
+      if (response.ok) {
+        const data = await response.json();
+        setFilterOptions({
+          bankNames: data.bankNames ?? [],
+          cardTypes: data.cardTypes ?? [],
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchCards();
+      void fetchCards();
+      void fetchFilterOptions();
     } else {
       setCards([]);
     }
   }, [status]);
 
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    if (isFirstFilterRun.current) {
+      isFirstFilterRun.current = false;
+      return;
+    }
+    const t = setTimeout(() => void fetchCards(), 300);
+    return () => clearTimeout(t);
+  }, [filterBankName, filterCardType, status, fetchCards]);
+
   const handleDeleteCard = (cardId: string) => {
     setCards((prevCards) => prevCards.filter((card) => card.id !== cardId));
   };
+
+  const handleClearFilters = () => {
+    setFilterBankName("");
+    setFilterCardType("");
+    isFirstFilterRun.current = false;
+    void (async () => {
+      const res = await fetch(
+        `/api/bank-cards?page=1&pageSize=${PAGE_SIZE}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setCards(data.cards);
+      }
+    })();
+  };
+
+  const hasActiveFilters =
+    filterBankName.trim() !== "" || filterCardType.trim() !== "";
+
+  const cardTypeListItems = [
+    { value: "", label: dict.home.filterAll },
+    ...filterOptions.cardTypes.map((c) => ({ value: c, label: c })),
+  ];
 
   if (status === "loading") {
     return (
@@ -173,6 +238,35 @@ export default function HomePage() {
               {dict.cashback.optimizerTitle}
             </Link>
           </div>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+            <div className="w-full sm:w-44 sm:min-w-0">
+              <TextField
+                className="mb-0 [&_label]:text-xs [&_input]:py-1.5 [&_input]:text-sm"
+                label={dict.home.filterByBankName}
+                placeholder={dict.home.filterByBankName}
+                value={filterBankName}
+                onChange={setFilterBankName}
+              />
+            </div>
+            <div className="w-full sm:w-48">
+              <ListBox
+                label={dict.home.filterCardType}
+                value={filterCardType}
+                listItems={cardTypeListItems}
+                onChange={setFilterCardType}
+                placeholder={dict.home.filterAll}
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="h-[38px] shrink-0 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                {dict.home.clearFilters}
+              </button>
+            )}
+          </div>
           {isLoading ? (
             <Skeleton count={3} />
           ) : (
@@ -223,7 +317,10 @@ export default function HomePage() {
       {isAddCardDialogOpen && (
         <AddBankCardDialog
           onClose={() => setIsAddCardDialogOpen(false)}
-          onSuccess={fetchCards}
+          onSuccess={() => {
+            void fetchCards();
+            void fetchFilterOptions();
+          }}
         />
       )}
     </div>

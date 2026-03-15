@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { auth } from "~/server/auth";
 
-// GET all bank cards for the current user (with pagination)
+// GET all bank cards for the current user (with pagination and optional filters)
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -12,12 +12,21 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") ?? "1", 10);
     const pageSize = parseInt(searchParams.get("pageSize") ?? "10", 10);
+    const bankName = searchParams.get("bankName")?.trim() ?? "";
+    const cardType = searchParams.get("cardType")?.trim() ?? "";
     const skip = (page - 1) * pageSize;
+
+    const baseWhere = {
+      userId: session.user.id,
+      ...(bankName && {
+        bankName: { contains: bankName, mode: "insensitive" as const },
+      }),
+      ...(cardType && { cardType }),
+    };
+
     const [cards, total] = await Promise.all([
       prisma.bankCard.findMany({
-        where: {
-          userId: session.user.id,
-        },
+        where: baseWhere,
         select: {
           id: true,
           cardName: true,
@@ -31,9 +40,7 @@ export async function GET(request: Request) {
         take: pageSize,
       }),
       prisma.bankCard.count({
-        where: {
-          userId: session.user.id,
-        },
+        where: baseWhere,
       }),
     ]);
     return NextResponse.json({ cards, total, page, pageSize });
