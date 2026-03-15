@@ -6,6 +6,7 @@ export const en = {
   },
   header: {
     appName: "SpendWise",
+    myCards: "My Cards",
     dashboard: "Dashboard",
     qr: "QR Payment",
     import: "Import transactions",

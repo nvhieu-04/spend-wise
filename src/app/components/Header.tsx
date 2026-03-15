@@ -45,10 +45,10 @@ const Header = () => {
   const otherLocale: Locale = locale === "en" ? "vn" : "en";
   const switchHref = buildPathWithLocale(pathname, otherLocale);
 
+  const homeHref = buildPathWithLocale("/", locale);
   const dashboardHref = buildPathWithLocale("/dashboard", locale);
   const qrHref = buildPathWithLocale("/qr", locale);
   const importHref = buildPathWithLocale("/import", locale);
-  const homeHref = buildPathWithLocale("/", locale);
 
   const closeMobile = () => setIsMobileMenuOpen(false);
 
@@ -78,6 +78,12 @@ const Header = () => {
           >
             {session && (
               <div className="mr-2 flex items-center gap-1 border-r border-gray-200 pr-3 lg:pr-4">
+                <Link
+                  href={homeHref}
+                  className={`${navLink} ${isActivePath(pathname, homeHref) ? navLinkActive : navLinkInactive}`}
+                >
+                  {dict.header.myCards}
+                </Link>
                 <Link
                   href={dashboardHref}
                   className={`${navLink} ${isActivePath(pathname, dashboardHref) ? navLinkActive : navLinkInactive}`}
@@ -167,6 +173,13 @@ const Header = () => {
             <div className="flex flex-col gap-0.5">
               {session && (
                 <>
+                  <Link
+                    href={homeHref}
+                    className={`rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${isActivePath(pathname, homeHref) ? "bg-blue-50 text-[#3A8DFF]" : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"}`}
+                    onClick={closeMobile}
+                  >
+                    {dict.header.myCards}
+                  </Link>
                   <Link
                     href={dashboardHref}
                     className={`rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${isActivePath(pathname, dashboardHref) ? "bg-blue-50 text-[#3A8DFF]" : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"}`}

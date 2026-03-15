@@ -6,6 +6,7 @@ export const vn = {
   },
   header: {
     appName: "SpendWise",
+    myCards: "Thẻ của tôi",
     dashboard: "Dashboard tổng quan",
     qr: "Thanh toán QR",
     import: "Import giao dịch",
