@@ -171,6 +171,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
     if (
       !formData.categoryId ||
       !formData.amount ||
+      !formData.transactionDate ||
       !Array.isArray(cashbackPolicies) ||
       cashbackPolicies.length === 0
     ) {
