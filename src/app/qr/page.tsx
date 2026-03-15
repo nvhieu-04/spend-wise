@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { getDictionary, type Locale } from "~/i18n";
 
 interface Bank {
@@ -9,7 +10,27 @@ interface Bank {
   bin: string;
 }
 
+interface QrTemplate {
+  id: string;
+  name: string;
+  acqId: string;
+  accountNo: string;
+  accountName: string;
+  addInfo: string | null;
+}
+
+interface QrHistoryItem {
+  id: string;
+  acqId: string;
+  accountNo: string;
+  accountName: string;
+  amount: number | null;
+  addInfo: string | null;
+  createdAt: string;
+}
+
 export default function QrPage() {
+  const { data: session } = useSession();
   const [accountNo, setAccountNo] = useState("");
   const [accountName, setAccountName] = useState("");
   const [acqId, setAcqId] = useState("");
@@ -20,13 +41,17 @@ export default function QrPage() {
   const [error, setError] = useState<string | null>(null);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
+  const [templates, setTemplates] = useState<QrTemplate[]>([]);
+  const [history, setHistory] = useState<QrHistoryItem[]>([]);
+  const [templateName, setTemplateName] = useState("");
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
   const pathname = usePathname();
 
-  const [, maybeLocale] = pathname.split("/");
-  const locale: Locale =
-    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const locale: Locale = pathname?.startsWith("/vn") ? "vn" : pathname?.startsWith("/en") ? "en" : "en";
   const dict = getDictionary(locale);
   const backHref = locale === "en" || locale === "vn" ? `/${locale}` : "/";
+  const isLoggedIn = !!session?.user;
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -51,6 +76,70 @@ export default function QrPage() {
 
     fetchBanks();
   }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const load = async () => {
+      try {
+        const [tRes, hRes] = await Promise.all([
+          fetch("/api/qr/templates"),
+          fetch("/api/qr/history"),
+        ]);
+        if (tRes.ok) {
+          const data = await tRes.json();
+          setTemplates(Array.isArray(data) ? data : []);
+        }
+        if (hRes.ok) {
+          const data = await hRes.json();
+          setHistory(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    void load();
+  }, [isLoggedIn]);
+
+  const applyToForm = (item: {
+    acqId: string;
+    accountNo: string;
+    accountName: string;
+    amount?: number | null;
+    addInfo?: string | null;
+  }) => {
+    setAcqId(item.acqId);
+    setAccountNo(item.accountNo);
+    setAccountName(item.accountName);
+    setAmount(item.amount != null ? String(item.amount) : "");
+    setAddInfo(item.addInfo ?? "");
+  };
+
+  const handleSaveAsTemplate = async () => {
+    const name = templateName.trim();
+    if (!name || !accountNo || !accountName || !acqId) return;
+    setSavingTemplate(true);
+    try {
+      const res = await fetch("/api/qr/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          acqId,
+          accountNo,
+          accountName,
+          addInfo: addInfo || undefined,
+        }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setTemplates((prev) => [created, ...prev]);
+        setShowSaveTemplate(false);
+        setTemplateName("");
+      }
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +172,13 @@ export default function QrPage() {
         return;
       }
       setQrDataURL(data.qrDataURL || null);
+      if (isLoggedIn) {
+        const hRes = await fetch("/api/qr/history");
+        if (hRes.ok) {
+          const list = await hRes.json();
+          setHistory(Array.isArray(list) ? list : []);
+        }
+      }
     } catch (err) {
       setError(dict.qr.errorApi);
     } finally {
@@ -132,6 +228,31 @@ export default function QrPage() {
 
         <div className="grid grid-cols-1 gap-6 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:grid-cols-2 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isLoggedIn && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  {dict.qr.templatesTitle}
+                </label>
+                <select
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  value=""
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (!id) return;
+                    const t = templates.find((x) => x.id === id);
+                    if (t) applyToForm(t);
+                    e.target.value = "";
+                  }}
+                >
+                  <option value="">{dict.qr.templatePlaceholder}</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 {dict.qr.bankLabel}
@@ -207,6 +328,17 @@ export default function QrPage() {
                 maxLength={25}
               />
             </div>
+            {isLoggedIn && accountNo && accountName && acqId && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowSaveTemplate(true)}
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  {dict.qr.saveAsTemplate}
+                </button>
+              </div>
+            )}
             <button
               type="submit"
               disabled={isLoading}
@@ -238,6 +370,86 @@ export default function QrPage() {
             )}
           </div>
         </div>
+
+        {isLoggedIn && (
+          <section className="mt-8 rounded-xl border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
+            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+              {dict.qr.historyTitle}
+            </h2>
+            {history.length === 0 ? (
+              <p className="text-sm text-gray-500">{dict.qr.noHistory}</p>
+            ) : (
+              <ul className="space-y-2">
+                {history.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
+                  >
+                    <span className="truncate">
+                      {item.accountName} • {item.accountNo}
+                      {item.amount != null && ` • ${item.amount.toLocaleString("vi-VN")} đ`}
+                      {item.addInfo && ` • ${item.addInfo}`}
+                    </span>
+                    <span className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => applyToForm(item)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {dict.qr.useAgain}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => applyToForm(item)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {dict.qr.recreate}
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+        {showSaveTemplate && (
+          <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/30 p-4">
+            <div className="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg">
+              <label className="block text-sm font-medium text-gray-700">
+                {dict.qr.saveAsTemplate}
+              </label>
+              <input
+                type="text"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder={dict.qr.templateNamePlaceholder}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                autoFocus
+              />
+              <div className="mt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSaveTemplate(false);
+                    setTemplateName("");
+                  }}
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  {dict.dialogs.common.cancel}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveAsTemplate}
+                  disabled={!templateName.trim() || savingTemplate}
+                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {savingTemplate ? dict.dialogs.common.saving : dict.qr.saveAsTemplate}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

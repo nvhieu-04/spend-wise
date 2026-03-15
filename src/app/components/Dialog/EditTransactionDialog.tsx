@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Dialog, { DialogButton, DialogFooter } from "../Dialog";
 import {
   formatNumberWithDots,
   parseNumberFromFormatted,
 } from "../../../lib/utils";
+import { getDictionary, type Locale } from "~/i18n";
 
 interface Category {
   id: string;
@@ -42,9 +44,15 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
   onSuccess,
   cardId,
 }) => {
+  const pathname = usePathname();
+  const locale: Locale =
+    pathname?.startsWith("/vn") ? "vn" : pathname?.startsWith("/en") ? "en" : "en";
+  const dict = getDictionary(locale);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState<FormData>({
     amount: "",
     transactionDate: "",
@@ -89,6 +97,32 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
       });
     }
   }, [transaction]);
+
+  useEffect(() => {
+    if (!formData.merchantName.trim() || !cardId) {
+      setSuggestions([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      const run = async () => {
+        try {
+          const res = await fetch(
+            `/api/categories/suggest?cardId=${encodeURIComponent(cardId)}&merchantName=${encodeURIComponent(formData.merchantName)}`,
+          );
+          if (res.ok) {
+            const data = await res.json();
+            setSuggestions(data.suggestions ?? []);
+          } else {
+            setSuggestions([]);
+          }
+        } catch {
+          setSuggestions([]);
+        }
+      };
+      void run();
+    }, 300);
+    return () => clearTimeout(t);
+  }, [cardId, formData.merchantName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -255,6 +289,29 @@ const EditTransactionDialog: React.FC<EditTransactionDialogProps> = ({
           >
             Category
           </label>
+          {suggestions.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              <span className="text-xs text-gray-500 self-center">
+                {dict.transactions.suggestedCategoriesLabel}:
+              </span>
+              {suggestions.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, categoryId: s.id }))
+                  }
+                  className={`rounded-full px-3 py-1 text-sm transition-colors ${
+                    formData.categoryId === s.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          )}
           <select
             id="categoryId"
             name="categoryId"

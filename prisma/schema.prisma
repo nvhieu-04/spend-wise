@@ -8,16 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  email         String     @unique
-  createdAt     DateTime   @default(now())
+  email         String       @unique
+  createdAt     DateTime     @default(now())
   passwordHash  String?
   image         String?
   emailVerified String?
   accounts      Account[]
   bankCards     BankCard[]
   sessions      Session[]
+  qrTemplates   QrTemplate[]
+  qrHistories   QrHistory[]
 }
 
 model Account {
@@ -116,4 +118,32 @@ model Category {
 
   @@unique([name, cardId])
   @@index([cardId])
+}
+
+model QrTemplate {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  name        String
+  acqId       String
+  accountNo   String
+  accountName String
+  addInfo     String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model QrHistory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  acqId       String
+  accountNo   String
+  accountName String
+  amount      Float?
+  addInfo     String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

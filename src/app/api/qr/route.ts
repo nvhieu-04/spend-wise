@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { auth } from "~/server/auth";
+import { qrHistory } from "~/server/db";
 
 const VIETQR_CLIENT_ID = process.env.VIETQR_CLIENT_ID;
 const VIETQR_API_KEY = process.env.VIETQR_API_KEY;
@@ -58,6 +60,20 @@ export async function POST(request: Request) {
         },
         { status: upstreamResponse.status || 502 },
       );
+    }
+
+    const session = await auth();
+    if (session?.user?.id) {
+      await qrHistory.create({
+        data: {
+          userId: session.user.id,
+          acqId: String(acqId),
+          accountNo,
+          accountName,
+          amount: amount != null ? Number(amount) : null,
+          addInfo: addInfo ?? null,
+        },
+      });
     }
 
     return NextResponse.json(

@@ -3,7 +3,7 @@ import { prisma } from "~/server/db";
 const RULES: { keywords: string[]; categoryName: string }[] = [
   { keywords: ["grab", "gojek", "uber", "be", "di chuyen", "taxi", "xe om"], categoryName: "Di chuyển" },
   { keywords: ["shopee", "lazada", "tiki", "sendo", "mua sam", "shopping"], categoryName: "Mua sắm" },
-  { keywords: ["an", "food", "foody", "grab food", "highlands", "starbucks", "coffee", "nha hang", "quan an", "com", "pho"], categoryName: "Ăn uống" },
+  { keywords: ["an", "food", "foody", "grab food", "highlands", "starbucks", "coffee", "nha hang", "quan an", "com", "pho", "circle k"], categoryName: "Ăn uống" },
   { keywords: ["electric", "dien", "evn", "nuoc", "water", "internet", "fpt", "vnpt", "mobifone", "viettel"], categoryName: "Tiện ích" },
   { keywords: ["fitness", "gym", "yoga", "suc khoe", "phong kham", "benh vien", "hospital"], categoryName: "Sức khỏe" },
   { keywords: ["netflix", "spotify", "game", "entertainment", "giai tri"], categoryName: "Giải trí" },
@@ -43,4 +43,35 @@ export async function suggestCategory(
   }
 
   return null;
+}
+
+const MAX_SUGGESTIONS = 3;
+
+export async function suggestCategories(
+  merchantName: string,
+  cardId: string,
+): Promise<{ id: string; name: string }[]> {
+  const text = (merchantName ?? "").trim();
+  if (!text) return [];
+
+  const categories = await prisma.category.findMany({
+    where: { cardId },
+    select: { id: true, name: true },
+  });
+
+  const nameToCategory = new Map(categories.map((c) => [c.name, c]));
+  const seenIds = new Set<string>();
+  const result: { id: string; name: string }[] = [];
+
+  for (const rule of RULES) {
+    if (result.length >= MAX_SUGGESTIONS) break;
+    if (!descriptionMatches(text, rule.keywords)) continue;
+    const cat = nameToCategory.get(rule.categoryName);
+    if (cat && !seenIds.has(cat.id)) {
+      seenIds.add(cat.id);
+      result.push({ id: cat.id, name: cat.name });
+    }
+  }
+
+  return result;
 }

@@ -125,6 +125,16 @@ export const vn = {
       "Vui lòng nhập đủ Số tài khoản, Tên tài khoản và chọn Ngân hàng.",
     errorCreateFailed: "Không thể tạo mã QR",
     errorApi: "Có lỗi xảy ra khi gọi VietQR",
+    templatesTitle: "Mẫu đã lưu",
+    useTemplate: "Chọn mẫu",
+    templatePlaceholder: "Chọn mẫu hay dùng",
+    saveAsTemplate: "Lưu làm mẫu",
+    templateNamePlaceholder: "VD: Tiền nhà, Bảo hiểm",
+    noTemplates: "Chưa có mẫu nào",
+    historyTitle: "Lịch sử QR đã tạo",
+    useAgain: "Dùng lại",
+    recreate: "Điền & tạo lại",
+    noHistory: "Chưa có lịch sử",
   },
   cards: {
     errorLoadingTitle: "Lỗi khi tải chi tiết thẻ",
@@ -194,6 +204,9 @@ export const vn = {
     fetchCategoriesError: "Không thể tải danh sách danh mục",
     fetchCardError: "Không thể tải thông tin thẻ",
     fetchTransactionsError: "Không thể tải danh sách giao dịch",
+  },
+  transactions: {
+    suggestedCategoriesLabel: "Đề xuất",
   },
   dialogs: {
     common: {

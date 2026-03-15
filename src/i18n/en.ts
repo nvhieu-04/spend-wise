@@ -126,6 +126,16 @@ export const en = {
       "Please fill in account number, account name and select a bank.",
     errorCreateFailed: "Unable to generate QR code",
     errorApi: "An error occurred while calling VietQR",
+    templatesTitle: "Saved templates",
+    useTemplate: "Use template",
+    templatePlaceholder: "Choose a template",
+    saveAsTemplate: "Save as template",
+    templateNamePlaceholder: "e.g. Rent, Insurance",
+    noTemplates: "No saved templates",
+    historyTitle: "Recent QR",
+    useAgain: "Use again",
+    recreate: "Fill & create",
+    noHistory: "No QR history yet",
   },
   cards: {
     errorLoadingTitle: "Error Loading Card Details",
@@ -195,6 +205,9 @@ export const en = {
     fetchCategoriesError: "Failed to load categories",
     fetchCardError: "Failed to fetch card details",
     fetchTransactionsError: "Failed to fetch transactions",
+  },
+  transactions: {
+    suggestedCategoriesLabel: "Suggested",
   },
   dialogs: {
     common: {
