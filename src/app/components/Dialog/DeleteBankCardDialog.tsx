@@ -1,4 +1,6 @@
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { getDictionary, type Locale } from "~/i18n";
 import DialogComponent, { DialogButton, DialogFooter } from "../Dialog";
 
 interface DeleteBankCardDialogProps {
@@ -15,6 +17,12 @@ export default function DeleteBankCardDialog({
   onDelete,
 }: DeleteBankCardDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const pathname = usePathname() ?? "";
+  const [, maybeLocale] = pathname.split("/");
+  const locale: Locale =
+    maybeLocale === "en" || maybeLocale === "vn" ? maybeLocale : "en";
+  const dict = getDictionary(locale);
+
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
@@ -27,45 +35,46 @@ export default function DeleteBankCardDialog({
       }
 
       onDelete?.(cardId);
-      // Instead of reloading the page, fetch new notifications
       const notificationResponse = await fetch("/api/notifications");
       if (notificationResponse.ok) {
         const notifications = await notificationResponse.json();
-        // Dispatch a custom event to update notifications
         window.dispatchEvent(
           new CustomEvent("notifications-updated", { detail: notifications }),
         );
       }
     } catch (error) {
       console.error("Error deleting card:", error);
-      alert("Failed to delete card. Please try again.");
+      alert(dict.dialogs.deleteCard.error);
     } finally {
       setIsDeleting(false);
       onClose();
     }
   };
+
+  const description = dict.dialogs.deleteCard.description.replace(
+    "{cardName}",
+    cardName,
+  );
+
   return (
     <DialogComponent
       isOpen={true}
       onClose={onClose}
-      title="Delete Card"
-      description={`Are you sure you want to delete the card "${cardName}"? This action cannot be undone.`}
+      title={dict.dialogs.deleteCard.title}
+      description={description}
     >
       <DialogFooter>
-        <DialogButton
-          variant="secondary"
-          onClick={() => {
-            onClose();
-          }}
-        >
-          Cancel
+        <DialogButton variant="secondary" onClick={onClose}>
+          {dict.dialogs.common.cancel}
         </DialogButton>
         <DialogButton
           variant="danger"
           onClick={handleDelete}
           disabled={isDeleting}
         >
-          {isDeleting ? "Deleting..." : "Delete"}
+          {isDeleting
+            ? dict.dialogs.deleteCard.deleting
+            : dict.dialogs.deleteCard.delete}
         </DialogButton>
       </DialogFooter>
     </DialogComponent>

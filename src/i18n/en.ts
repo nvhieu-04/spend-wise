@@ -236,6 +236,14 @@ export const en = {
       saveChanges: "Save Changes",
       genericError: "Something went wrong. Please try again.",
     },
+    deleteCard: {
+      title: "Delete Card",
+      description:
+        'Are you sure you want to delete the card "{cardName}"? This action cannot be undone.',
+      delete: "Delete",
+      deleting: "Deleting...",
+      error: "Failed to delete card. Please try again.",
+    },
     category: {
       addTitle: "Add New Category",
       editTitle: "Edit Category",

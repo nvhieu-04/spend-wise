@@ -235,6 +235,14 @@ export const vn = {
       saveChanges: "Lưu thay đổi",
       genericError: "Có lỗi xảy ra. Vui lòng thử lại.",
     },
+    deleteCard: {
+      title: "Xóa thẻ",
+      description:
+        'Bạn có chắc chắn muốn xóa thẻ "{cardName}"? Hành động này không thể hoàn tác.',
+      delete: "Xóa",
+      deleting: "Đang xóa...",
+      error: "Xóa thẻ thất bại. Vui lòng thử lại.",
+    },
     category: {
       addTitle: "Thêm danh mục mới",
       editTitle: "Chỉnh sửa danh mục",
