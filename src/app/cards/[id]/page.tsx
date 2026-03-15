@@ -1,5 +1,10 @@
 "use client";
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowUpTrayIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import Link from "next/link";
 import { redirect, useParams, usePathname } from "next/navigation";
@@ -914,6 +919,17 @@ export default function CardDetailPage() {
               <PlusIcon className="mr-2 h-5 w-5" />
               {dict.cards.addTransactionButton}
             </button>
+            <Link
+              href={
+                locale === "en" || locale === "vn"
+                  ? `/${locale}/import?cardId=${cardId}`
+                  : `/import?cardId=${cardId}`
+              }
+              className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+            >
+              <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+              {dict.header.import}
+            </Link>
           </div>
         </div>
 

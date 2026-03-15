@@ -35,6 +35,7 @@ const Header = () => {
 
   const dashboardHref = buildPathWithLocale("/dashboard", locale);
   const qrHref = buildPathWithLocale("/qr", locale);
+  const importHref = buildPathWithLocale("/import", locale);
   const homeHref = buildPathWithLocale("/", locale);
 
   return (
@@ -71,6 +72,12 @@ const Header = () => {
                   className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
                 >
                   {dict.header.qr}
+                </Link>
+                <Link
+                  href={importHref}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
+                >
+                  {dict.header.import}
                 </Link>
               </>
             )}
@@ -144,6 +151,13 @@ const Header = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {dict.header.qr}
+                  </Link>
+                  <Link
+                    href={importHref}
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {dict.header.import}
                   </Link>
                   <Link
                     href="api/auth/signout"

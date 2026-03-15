@@ -79,6 +79,8 @@ export class TransactionService {
         data.cardId,
         data.categoryId,
         data.amount,
+        data.transactionDate,
+        data.merchantName ?? null,
       );
     }
 
