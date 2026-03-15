@@ -209,6 +209,21 @@ export const en = {
   transactions: {
     suggestedCategoriesLabel: "Suggested",
   },
+  notifications: {
+    title: "Notifications",
+    newCount: "{count} new",
+    noNew: "No new notifications",
+    markAllRead: "Mark all as read",
+    viewAll: "View all",
+    paymentReminder: "Payment Reminder",
+    dueToday: "Due today",
+    dueTomorrow: "Due tomorrow",
+    dueInDays: "Due in {days} days",
+    dueDateLabel: "Due date",
+    paymentAmount: "Payment {amount} VND",
+    paymentMessage: "Payment of {amount} VND is due {dueText} for {cardName} ({bankName})",
+    ariaLabel: "Notifications",
+  },
   dialogs: {
     common: {
       cancel: "Cancel",

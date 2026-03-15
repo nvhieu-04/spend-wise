@@ -208,6 +208,21 @@ export const vn = {
   transactions: {
     suggestedCategoriesLabel: "Đề xuất",
   },
+  notifications: {
+    title: "Thông báo",
+    newCount: "{count} mới",
+    noNew: "Không có thông báo mới",
+    markAllRead: "Đánh dấu đã đọc",
+    viewAll: "Xem tất cả",
+    paymentReminder: "Nhắc thanh toán",
+    dueToday: "Đến hạn hôm nay",
+    dueTomorrow: "Đến hạn ngày mai",
+    dueInDays: "Đến hạn sau {days} ngày",
+    dueDateLabel: "Hạn thanh toán",
+    paymentAmount: "Thanh toán {amount} VND",
+    paymentMessage: "Thanh toán {amount} VND {dueText} cho {cardName} ({bankName})",
+    ariaLabel: "Thông báo",
+  },
   dialogs: {
     common: {
       cancel: "Hủy",

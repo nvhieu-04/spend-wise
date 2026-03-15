@@ -1,21 +1,29 @@
-import { formatDistanceToNow } from "date-fns";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FiBell, FiCheckCircle, FiChevronRight } from "react-icons/fi";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { formatNumberWithDots } from "../../lib/utils";
+import { getDictionary, type Locale } from "~/i18n";
+import { formatNumberWithDots } from "~/lib/utils";
+import {
+  getPaymentReminderDueText,
+  getPaymentReminderMessage,
+  type PaymentReminderNotification,
+} from "./notifications/formatNotification";
 
-interface Notification {
-  cardId: string;
-  cardName: string;
-  bankName: string;
-  paymentDueDate: string;
-  daysUntilPayment: number;
-  totalSpending: number;
-  message: string;
+type Notification = PaymentReminderNotification;
+
+function getLocaleFromPath(pathname: string): Locale {
+  const [, maybeLocale] = pathname.split("/");
+  if (maybeLocale === "en" || maybeLocale === "vn") return maybeLocale;
+  return "en";
 }
 
 export default function NotificationIcon() {
+  const pathname = usePathname() ?? "";
+  const locale = getLocaleFromPath(pathname);
+  const dict = getDictionary(locale);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -85,11 +93,11 @@ export default function NotificationIcon() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`relative p-2 text-gray-600 transition-colors hover:text-blue-600 focus:outline-none ${isUnread ? "animate-shake" : ""}`}
-        aria-label="Notifications"
+        aria-label={dict.notifications.ariaLabel}
       >
         <FiBell className="h-6 w-6" />
         {notifications.length > 0 && (
-          <span className="absolute -top-1 -right-1 h-3 w-3 animate-pulse rounded-full border-2 border-white bg-red-500"></span>
+          <span className="absolute -top-1 -right-1 h-3 w-3 animate-pulse rounded-full border-2 border-white bg-red-500" />
         )}
       </button>
       {isOpen && (
@@ -97,11 +105,14 @@ export default function NotificationIcon() {
           <div className="p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                <FiBell className="text-blue-500" /> Notifications
+                <FiBell className="text-blue-500" /> {dict.notifications.title}
               </h3>
               {notifications.length > 0 && (
                 <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-                  {notifications.length} new
+                  {dict.notifications.newCount.replace(
+                    "{count}",
+                    String(notifications.length),
+                  )}
                 </span>
               )}
             </div>
@@ -113,58 +124,68 @@ export default function NotificationIcon() {
               <div className="py-6 text-center">
                 <FiCheckCircle className="mx-auto h-10 w-10 text-gray-300" />
                 <p className="mt-4 text-sm text-gray-500">
-                  No new notifications
+                  {dict.notifications.noNew}
                 </p>
               </div>
             ) : (
               <div className="max-h-72 space-y-2 overflow-y-auto">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.cardId}
-                    className="group relative flex cursor-pointer items-start rounded-lg p-3 transition-colors hover:bg-gray-50"
-                  >
-                    <div className="mt-1 flex-shrink-0">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                        <svg
-                          className="h-5 w-5 text-blue-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                          />
-                        </svg>
+                {notifications.map((notification) => {
+                  const n = notification as PaymentReminderNotification;
+                  const message = getPaymentReminderMessage(
+                    dict.notifications,
+                    n,
+                  );
+                  const dueText = getPaymentReminderDueText(
+                    dict.notifications,
+                    n.daysUntilPayment,
+                  );
+                  return (
+                    <div
+                      key={notification.cardId}
+                      className="group relative flex cursor-pointer items-start rounded-lg p-3 transition-colors hover:bg-gray-50"
+                    >
+                      <div className="mt-1 flex-shrink-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                          <svg
+                            className="h-5 w-5 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                            />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                    <div className="ml-3 min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="truncate text-sm font-medium text-gray-900">
-                          {notification.cardName}
+                      <div className="ml-3 min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="truncate text-sm font-medium text-gray-900">
+                            {notification.cardName}
+                          </p>
+                          <span className="ml-2 flex-shrink-0 text-xs font-medium text-blue-600">
+                            {dueText}
+                          </span>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-gray-600">
+                          {message}
                         </p>
-                        <span className="ml-2 flex-shrink-0 text-xs font-medium text-blue-600">
-                          {formatDistanceToNow(
-                            new Date(notification.paymentDueDate),
-                            { addSuffix: true, locale: undefined },
+                        <p className="mt-1 text-xs text-gray-500">
+                          {dict.notifications.paymentAmount.replace(
+                            "{amount}",
+                            formatNumberWithDots(notification.totalSpending),
                           )}
-                        </span>
+                        </p>
                       </div>
-                      <p className="mt-1 truncate text-xs text-gray-600">
-                        {notification.message}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Payment{" "}
-                        {formatNumberWithDots(notification.totalSpending)} VND
-                      </p>
+                      <div className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <FiChevronRight className="text-gray-400" />
+                      </div>
                     </div>
-                    <div className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
-                      <FiChevronRight className="text-gray-400" />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             <div className="mt-4 flex items-center justify-between gap-2">
@@ -172,10 +193,10 @@ export default function NotificationIcon() {
                 className="rounded-lg bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
                 onClick={handleMarkAllRead}
               >
-                Mark all as read
+                {dict.notifications.markAllRead}
               </button>
               <button className="flex items-center gap-1 rounded-lg bg-blue-500 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-600">
-                View all <FiChevronRight />
+                {dict.notifications.viewAll} <FiChevronRight />
               </button>
             </div>
           </div>

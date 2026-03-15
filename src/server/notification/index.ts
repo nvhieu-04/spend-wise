@@ -52,8 +52,7 @@ export class NotificationService {
         (nextPaymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       );
 
-      // If payment is due in 5 days or less
-      if (daysUntilPayment <= 5 && daysUntilPayment > 0) {
+      if (daysUntilPayment <= 5 && daysUntilPayment >= 0) {
         // Calculate total spending for the current statement period
         const totalSpending = card.transactions.reduce(
           (sum, t) => sum + t.amount,
@@ -61,13 +60,13 @@ export class NotificationService {
         );
 
         notifications.push({
+          type: "payment_reminder" as const,
           cardId: card.id,
           cardName: card.cardName,
           bankName: card.bankName,
           paymentDueDate: nextPaymentDate,
           daysUntilPayment,
           totalSpending,
-          message: `Payment of ${totalSpending.toLocaleString()} VNĐ is due in ${daysUntilPayment} day${daysUntilPayment > 1 ? "s" : ""} for ${card.cardName} (${card.bankName})`,
         });
       }
     }
