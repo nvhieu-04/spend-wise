@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const best = candidates[0];
+    const best = candidates[0]!;
 
     return NextResponse.json({
       bestCard: {
